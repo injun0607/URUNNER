@@ -57,7 +57,8 @@ public class MemberController {
         return memberRepository.findAll();
     }
 
-        //회원 탈퇴
+    // 회원 탈퇴
+
     @DeleteMapping("/leaveMember")
     public ResponseEntity<Void> leaveMember() throws Exception {
 
@@ -69,7 +70,7 @@ public class MemberController {
 
         memberService.leaveMember(authentication.getName());
 
-        return new ResponseEntity<Void>(HttpStatus.OK);
+        return null;
 
     }
 
