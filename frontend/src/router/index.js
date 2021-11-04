@@ -25,6 +25,9 @@ import StudyBoardListPage from '@/views/board/study/StudyBoardListPage.vue'
 import StudyBoardReadPage from '@/views/board/study/StudyBoardReadPage.vue'
 import StudyBoardModifyPage from '@/views/board/study/StudyBoardModifyPage.vue'
 
+//결제시스템 관련
+import PayMentPage from '@/views/payment/PayMentPage.vue'
+
 Vue.use(VueRouter)
 
 export default new VueRouter({
@@ -213,6 +216,17 @@ export default new VueRouter({
         name: 'StudyBoardModifyPage',
         components: {
           default: StudyBoardModifyPage
+        },
+        props: {
+          default: true
+        }
+      },
+      //결제관리 시스템 관련
+      {
+        path: '/payment-test',
+        name: 'PayMentPage',
+        components: {
+          default: PayMentPage
         },
         props: {
           default: true
