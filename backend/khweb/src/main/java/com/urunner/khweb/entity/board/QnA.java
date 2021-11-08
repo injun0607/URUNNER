@@ -7,16 +7,14 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @DynamicUpdate
 @Entity
-@Table(name = "studyboard")
-public class Study {
+@Table(name = "qnaboard")
+public class QnA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "board_no")
@@ -37,22 +35,25 @@ public class Study {
     @Column(length = 100, nullable = false)
     private String complete; // 모집 마감 여부
 
-    @Column(length = 100, nullable = false)
-    private Long fit; // 모집 인원
+    @Column(length = 100)
+    private Long currentNum; // 좋아요~
 
-    @Column(length = 100, nullable = false)
-    private Long currentNum; // 현재 지원한 인원은 몇 명?
+    @Column(length = 100)
+    private Long views; // 조회수
 
     @CreationTimestamp
     private Date regDate;
 
-    public Study(String title, String content, String writer, String name, String complete, Long fit, Long currentNum) {
+    @UpdateTimestamp
+    private Date upDate;
+
+    public QnA(String title, String content, String writer, String name, String complete, Long currentNum, Long views) {
         this.title = title;
         this.content = content;
         this.writer = writer;
         this.name = name;
         this.complete = complete;
-        this.fit = fit;
         this.currentNum = currentNum;
+        this.views = views;
     }
 }

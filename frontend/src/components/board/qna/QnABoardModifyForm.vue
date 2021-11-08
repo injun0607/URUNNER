@@ -17,8 +17,6 @@
             </div>
             <!-- 제목 -->
             <v-text-field label="제목" v-model="title"></v-text-field>
-            <!-- 인원설정 -->
-            <input type="number" v-model="fit">
             <!-- 마감 -->
             {{ complete }}
             <!-- 게시글 -->
@@ -30,7 +28,7 @@
 
         </div>
         <div class="button_box">
-            <router-link :to="{ name: 'StudyBoardListPage' }">
+            <router-link :to="{ name: 'QnABoardListPage' }">
                 <v-btn>
                     취소
                 </v-btn>
@@ -49,7 +47,7 @@
 import Editor from '@/components/board/Editor.vue'
 
 export default {
-    name: 'StudyBoardModifyForm',
+    name: 'QnABoardModifyForm',
     components: {
         Editor
     },
@@ -63,7 +61,6 @@ export default {
         return {
             title: '',
             content: '',
-            fit: this.board.fit,
             complete: this.board.complete,
             currentNum: this.board.currentNum
         }
@@ -71,8 +68,8 @@ export default {
     methods: {
         onSubmit (data) {
             this.content = data
-            const { title, content, fit, complete, currentNum } = this
-            this.$emit('submit', { title, content, fit, complete, currentNum })
+            const { title, content, complete, currentNum } = this
+            this.$emit('submit', { title, content, complete, currentNum })
         },
         ImgRequest() {
             try {

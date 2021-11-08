@@ -1,14 +1,14 @@
 <template>
     <div>
         <v-container>
-            <study-board-read v-if="board" :board="board" @submit="onSubmit"/>
+            <qna-board-read v-if="board" :board="board" @submit="onSubmit"/>
             <p v-else>로딩중 ......</p>
             <v-container class="middle_btn_box">
-                <router-link :to="{ name: 'StudyBoardListPage' }">
+                <router-link :to="{ name: 'QnABoardListPage' }">
                         목록
                 </router-link>                
                 <b v-show="board.writer == this.$store.state.moduleA.email || this.$store.state.isAuth">
-                    <router-link :to="{ name: 'StudyBoardModifyPage', params: { boardNo } }">
+                    <router-link :to="{ name: 'QnABoardModifyPage', params: { boardNo } }">
                         |수정
                     </router-link>
                 </b>                
@@ -29,19 +29,19 @@
                     </v-snackbar>
                 </div>
             </v-container>
-            <study-comment-list v-if="comments" :comments="comments" @submit="onSubmit"/>
+            <qna-comment-list v-if="comments" :comments="comments" @submit="onSubmit"/>
             <p v-else>로딩중 ......</p>            
         </v-container>        
     </div>
 </template>
 
 <script>
-import StudyBoardRead from '@/components/board/study/StudyBoardRead.vue'
-import StudyCommentList from '@/components/board/study/StudyCommentList.vue'
+import QnaBoardRead from '@/components/board/qna/QnABoardRead.vue'
+import QnaCommentList from '@/components/board/qna/QnACommentList.vue'
 import { mapState, mapActions } from 'vuex'
 import axios from 'axios'
 export default {
-    name: 'StudyBoardReadPage',
+    name: 'QnABoardReadPage',
     props: {
         boardNo: {
             type: String,
@@ -56,16 +56,17 @@ export default {
         }
     },
     components: {
-        StudyBoardRead,
-        StudyCommentList
+        QnaBoardRead,
+        QnaCommentList
     },
     watch: {
         refreshCheck(newVal) {
             if(newVal >= 0) {
                 console.log('refreshCheck값은 : ' + this.refreshCheck)
                 console.log('데이터 변동 감지')
-                this.fetchStudyCommentList(this.boardNo)
-                this.fetchStudyMemberList(this.boardNo)
+                this.fetchQnACommentList(this.boardNo)
+                this.fetchQnAMemberList(this.boardNo)
+                this.fetchQnABoard(this.boardNo)
                 this.refreshCheck = 1
             }
         }
@@ -73,10 +74,10 @@ export default {
     computed: {
         ...mapState(['board']),
         ...mapState(['comments']),
-        ...mapState(['studyMembers'])
+        ...mapState(['qnaMembers'])
     },    
     created () {
-        this.fetchStudyBoard(this.boardNo)
+        this.fetchQnABoard(this.boardNo)
          .then(() => {
                     this.$store.state.boardNo = this.boardNo // comment regist 하기 위해서 boardNo 값 저장
                     console.log('댓글 load 후에 저장된 state.boardNo값은? : ' + this.$store.state.boardNo)
@@ -87,18 +88,18 @@ export default {
                 })
     },
     mounted () {
-        this.fetchStudyCommentList(this.boardNo),
-        this.fetchStudyMemberList(this.boardNo)
+        this.fetchQnACommentList(this.boardNo),
+        this.fetchQnAMemberList(this.boardNo)
     },
     methods: {
-        ...mapActions(['fetchStudyBoard']),
-        ...mapActions(['fetchStudyCommentList']),
-        ...mapActions(['fetchStudyMemberList']),
+        ...mapActions(['fetchQnABoard']),
+        ...mapActions(['fetchQnACommentList']),
+        ...mapActions(['fetchQnAMemberList']),
         onDeletePost () {
                         const { boardNo } = this.board
-                        axios.delete(`http://localhost:7777/studyboard/${boardNo}`)
+                        axios.delete(`http://localhost:7777/qnaboard/${boardNo}`)
                         .then(() => {
-                            this.$router.push({ name: 'StudyBoardListPage' })
+                            this.$router.push({ name: 'QnABoardListPage' })
                         })
                         .catch(err => {
                             alert(err.response.data.message)

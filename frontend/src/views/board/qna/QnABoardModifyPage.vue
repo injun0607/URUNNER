@@ -1,7 +1,7 @@
 <template>
     <div>
         <v-container>
-        <study-board-modify-form v-if="board" :board="board" @submit="onSubmit"/>
+        <qna-board-modify-form v-if="board" :board="board" @submit="onSubmit"/>
         <p v-else>로딩중 .......</p>
         </v-container>
     </div>
@@ -9,13 +9,13 @@
 </template>
 
 <script>
-import StudyBoardModifyForm from '@/components/board/study/StudyBoardModifyForm'
+import QnaBoardModifyForm from '@/components/board/qna/QnABoardModifyForm'
 import { mapState, mapActions } from 'vuex'
 import axios from 'axios'
 export default {
-    name: 'StudyBoardModifyPage',
+    name: 'QnABoardModifyPage',
     components: {
-        StudyBoardModifyForm
+        QnaBoardModifyForm
     },
     props: {
         boardNo: {
@@ -27,14 +27,14 @@ export default {
         ...mapState(['board'])
     },
     methods: {
-        ...mapActions(['fetchStudyBoard']),
+        ...mapActions(['fetchQnABoard']),
         onSubmit (payload) {
-            const { title, content, fit, complete, currentNum } = payload
-            axios.put(`http://localhost:7777/studyboard/${this.boardNo}`, { title, content, fit, complete, currentNum })
+            const { title, content, complete, currentNum } = payload
+            axios.put(`http://localhost:7777/qnaboard/${this.boardNo}`, { title, content, complete, currentNum })
                     .then(res => {
                         console.log(res)
                         this.$router.push({
-                            name: 'StudyBoardReadPage',
+                            name: 'QnABoardReadPage',
                             params: { boardNo: this.boardNo }
                         })
                     })
@@ -44,7 +44,7 @@ export default {
         }
     },
     created () {
-        this.fetchStudyBoard(this.boardNo)
+        this.fetchQnABoard(this.boardNo)
                 .catch(err => {
                     alert(err.response.data.message)
                     this.$router.back()

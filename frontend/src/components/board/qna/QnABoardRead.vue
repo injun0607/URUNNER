@@ -24,31 +24,8 @@
                     <div v-html="board.content">{{ board.content }}</div>
                 </div>
             </div>
-            <!-- 지원자 목록 -->
-            <v-container fluid>
-                <v-row justify="center">
-                <v-subheader>지원자 목록</v-subheader>
-                    <v-expansion-panels popout>
-                        <v-expansion-panel
-                        v-for="(member, i) in this.$store.state.studyMembers"
-                        :key="i" hide-actions>
-                        <v-expansion-panel-header>
-                            <v-row align="center" class="spacer" no-gutters>
-                                <v-col class="hidden-xs-only" sm="5" md="3">
-                                    <strong v-html="member.name"></strong>
-                                </v-col>
-                            </v-row>
-                        </v-expansion-panel-header>
-                        <v-expansion-panel-content>
-                            <v-divider></v-divider>
-                            <v-card-text v-text="member.introduce"></v-card-text>
-                        </v-expansion-panel-content>
-                    </v-expansion-panel>
-                </v-expansion-panels>
-                </v-row>
-            </v-container>
-            <v-btn @click="appl(board.boardNo)">지원하기</v-btn>
-            <v-btn @click="endRecruit(board.boardNo)">모집 마감</v-btn>
+            <v-btn @click="endRecruit(board.boardNo)">답변 완료</v-btn>
+            
         </div>        
     </div>
 </template>
@@ -58,14 +35,14 @@
 import axios from 'axios'
 
 export default {
-    name: 'StudyBoardRead',
+    name: 'QnABoardRead',
     data () {
         return {
             name: '',
             email: '',
             introduce: 'HELLO WORLD!',
             refresh: 1,
-            members: this.$store.state.studyMembers,
+            members: this.$store.state.qnaMembers,
             complete: false
         }
     },
@@ -78,7 +55,7 @@ export default {
     methods : {
         ImgRequest() {
             try {
-                return require(`../../../../../backend/khweb/images/study/${this.board.writer}_${this.board.boardNo}.gif`
+                return require(`../../../../../backend/khweb/images/qna/${this.board.writer}_${this.board.boardNo}.gif`
                 )
             } catch (e) {
                 return require(`@/assets/logo.png`)
@@ -88,7 +65,7 @@ export default {
             this.name = this.$store.state.moduleA.name
             this.email = this.$store.state.moduleA.email
             const { name, email, introduce } = this
-            axios.put(`http://localhost:7777/studyboard/apply/${data}`, { name, email, introduce })
+            axios.put(`http://localhost:7777/qnaboard/apply/${data}`, { name, email, introduce })
                     .then(res => {
                         console.log(res)
                         this.refresh += 1
@@ -104,12 +81,12 @@ export default {
             this.board.complete = !this.board.complete
             console.log('this.board는 ')
             console.log(this.board)
-            const { title, content, fit, complete, currentNum } = this.board
-            axios.put(`http://localhost:7777/studyboard/${data}`, { title, content, fit, complete, currentNum })
+            const { title, content, complete, currentNum } = this.board
+            axios.put(`http://localhost:7777/qnaboard/${data}`, { title, content, complete, currentNum })
                     .then(res => {
                         console.log(res)
                         this.$router.push({
-                            name: 'StudyBoardReadPage',
+                            name: 'QnABoardReadPage',
                             params: { boardNo: this.boardNo }
                         })
                     })

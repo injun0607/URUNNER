@@ -25,8 +25,13 @@ import StudyBoardListPage from '@/views/board/study/StudyBoardListPage.vue'
 import StudyBoardReadPage from '@/views/board/study/StudyBoardReadPage.vue'
 import StudyBoardModifyPage from '@/views/board/study/StudyBoardModifyPage.vue'
 
-//결제시스템 관련
+//결제관리
 import PayMentPage from '@/views/payment/PayMentPage.vue'
+// 질문답변 게시판
+import QnABoardRegisterPage from '@/views/board/qna/QnABoardRegisterPage.vue'
+import QnABoardListPage from '@/views/board/qna/QnABoardListPage.vue'
+import QnABoardReadPage from '@/views/board/qna/QnABoardReadPage.vue'
+import QnABoardModifyPage from '@/views/board/qna/QnABoardModifyPage.vue'
 
 Vue.use(VueRouter)
 
@@ -60,6 +65,11 @@ export default new VueRouter({
           path: '/mypage/lecture/registerLectureImage',
           name: 'LectureImageRegisterPage',
           component: () => import ('../views/lecture/LectureImageRegisterPage.vue')
+      },
+      {
+        path: '/mypage/lecture/manageLecture',
+        name: 'ManageLecturePage',
+        component: () => import ('../views/lecture/ManageLecturePage.vue'),
       },
       // 회원 탈퇴
       {
@@ -221,12 +231,48 @@ export default new VueRouter({
           default: true
         }
       },
+
       //결제관리 시스템 관련
       {
         path: '/payment-test',
         name: 'PayMentPage',
         components: {
           default: PayMentPage
+        },
+        props:{
+          default: true
+        }
+      },
+      // 질문답변 게시판
+      {
+        path: '/qna/create',
+        name: 'QnABoardRegisterPage',
+        components: {
+          default: QnABoardRegisterPage
+        }
+      },
+      {
+        path: '/qna',
+        name: 'QnABoardListPage',
+        components: {
+          default: QnABoardListPage
+        }
+      },
+      {
+        path: '/qna/:boardNo',
+        name: 'QnABoardReadPage',
+        components: {
+          default: QnABoardReadPage
+        },
+        props: {
+          default: true
+        }
+      },
+      {
+        path: '/qna/:boardNo/edit',
+        name: 'QnABoardModifyPage',
+        components: {
+          default: QnABoardModifyPage
         },
         props: {
           default: true

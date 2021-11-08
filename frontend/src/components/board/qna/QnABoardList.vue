@@ -5,7 +5,7 @@
             <div class="title_box">
                 <h4 class="page_title">
                     <v-icon>mdi-exclamation-thick</v-icon>
-                    <span>스터디 모집</span></h4>
+                    <span>질문답변 게시판</span></h4>
             </div>
             <!-- 옵션바 -->
             <div class="option_box">
@@ -36,40 +36,27 @@
                     <div class="post_card_box">
                         <div class="post_card" v-for="mob in paginatedData" :key="mob.boardNo">
                             <router-link
-                                    :to="{ name: 'StudyBoardReadPage',
+                                    :to="{ name: 'QnABoardReadPage',
                                                         params: { boardNo: mob.boardNo.toString() } }">
-                            <div class="thumbnail">
-                                <v-progress-circular
-                                :rotate="-90"
-                                :size="100"
-                                :width="15"
-                                :value="mob.currentNum / mob.fit * 100"
-                                color="primary"
-                                >
-                                {{ mob.currentNum }} / {{ mob.fit }}
-                                </v-progress-circular>
-                            </div></router-link>
+                            </router-link>
                             <div class="post_box">
                                 <div class="post_tag">#TAG</div>
                                 <router-link
-                                    :to="{ name: 'StudyBoardReadPage',
+                                    :to="{ name: 'QnABoardReadPage',
                                                         params: { boardNo: mob.boardNo.toString() } }">
                                 <div class="post_title">{{ mob.title }}</div>
-                                <div class="post_content">{{ replaceHtml(mob.content) }}</div>
-                                <div class="post_reg_date">{{ mob.name }} | {{ $moment(mob.regDate).add(-0, 'hours').format('YY-MM-DD HH:mm') }}</div></router-link>
-                            </div>
-                            <div v-show="mob.complete == 'true'">
-                                <img src="@/assets/complete.png" v-show="mob.complete" width="130" class="item">
-                            </div>
-                            <div style="display:flex;justify-content:center;flex-wrap:wrap;height:20px">
-                                <v-icon color="red" style="height:20px">mdi-heart</v-icon>
-                                    {{mob.currentNum}}
-                            </div>
+                                <div class="post_content">{{ mob.name }} | {{ $moment(mob.regDate).add(-0, 'hours').format('YY-MM-DD HH:mm') }}
+                                    <v-icon color="red" style="height:20px">mdi-heart</v-icon>
+                                    {{mob.currentNum}} | <v-icon>mdi-eye</v-icon>{{ mob.views }}
+
+                                </div> 
+                                </router-link>
+                            </div>                            
                         </div>                        
                     </div>
                     <div class="button_box">
                         <v-flex text-xs-right="text-xs-right" text-sm-right="text-sm-right">
-                            <router-link :to="{ name: 'StudyBoardRegisterPage' }">
+                            <router-link :to="{ name: 'QnABoardRegisterPage' }">
                                 <v-btn
                                     v-if="this.$store.state.isLogin"
                                     color="light-blue lighten-1 text center"
@@ -98,7 +85,7 @@
                     <div class="post_card_box">
                         <div class="post_card" v-for="mob in paginatedDataS" :key="mob.boardNo">
                             <router-link
-                                    :to="{ name: 'StudyBoardReadPage',
+                                    :to="{ name: 'QnABoardReadPage',
                                                         params: { boardNo: mob.boardNo.toString() } }">
                             <div class="thumbnail">
                                 <v-progress-circular
@@ -114,13 +101,12 @@
                             <div class="post_box">
                                 <div class="post_tag">#사료추천</div>
                                 <router-link
-                                    :to="{ name: 'StudyBoardReadPage',
+                                    :to="{ name: 'QnABoardReadPage',
                                                         params: { boardNo: mob.boardNo.toString() } }">
                                 <div class="post_title">{{ mob.title }}</div>
                                 <div class="post_content">{{ replaceHtml(mob.content) }}</div>
                                 <div class="post_reg_date">{{ $moment(mob.regDate).add(-0, 'hours').format('YY-MM-DD HH:mm') }}</div></router-link>
                                 <div class="post_title">{{ mob.complete }}</div>
-                                <div class="post_title">{{ mob.fit }}</div>
                             </div>
                             <div v-show="mob.complete == 'true'">
                                 <img src="@/assets/complete.png" v-show="mob.complete" width="130" class="item">
@@ -129,7 +115,7 @@
                     </div>
                     <div class="button_box">
                         <v-flex text-xs-right="text-xs-right" text-sm-right="text-sm-right">
-                            <router-link :to="{ name: 'StudyBoardRegisterPage' }">
+                            <router-link :to="{ name: 'QnABoardRegisterPage' }">
                                 <v-btn
                                     v-if="this.$store.state.isLogin"
                                     color="light-blue lighten-1 text center"
@@ -170,7 +156,7 @@
                             <td style="text-align:center">{{ mob.boardNo }}</td>
                             <td>
                                 <router-link
-                                    :to="{ name: 'StudyBoardReadPage',
+                                    :to="{ name: 'QnABoardReadPage',
                                                         params: { boardNo: mob.boardNo.toString() } }">
                                     {{ mob.title }}
                                 </router-link>
@@ -183,7 +169,7 @@
             </v-simple-table>
             <div class="button_box">
                 <v-flex text-xs-right="text-xs-right" text-sm-right="text-sm-right">
-                    <router-link :to="{ name: 'StudyBoardRegisterPage' }">
+                    <router-link :to="{ name: 'QnABoardRegisterPage' }">
                         <v-btn
                             v-if="this.$store.state.isLogin"
                             color="light-blue lighten-1 text center"
@@ -218,7 +204,7 @@
                             <td style="text-align:center">{{ mob.boardNo }}</td>
                             <td>
                                 <router-link
-                                    :to="{ name: 'StudyBoardReadPage',
+                                    :to="{ name: 'QnABoardReadPage',
                                                         params: { boardNo: mob.boardNo.toString() } }">
                                     {{ mob.title }}
                                 </router-link>
@@ -231,7 +217,7 @@
             </v-simple-table>
             <div class="button_box">
                 <v-flex text-xs-right="text-xs-right" text-sm-right="text-sm-right">
-                    <router-link :to="{ name: 'StudyBoardRegisterPage' }">
+                    <router-link :to="{ name: 'QnABoardRegisterPage' }">
                         <v-btn
                             v-if="this.$store.state.isLogin"
                             color="light-blue lighten-1 text center"
@@ -255,7 +241,7 @@
 import { mapState } from 'vuex'
 
     export default {
-        name: 'StudyBoardList',
+        name: 'QnABoardList',
         props: {
             boards: {
                 type: Array
@@ -312,7 +298,7 @@ import { mapState } from 'vuex'
             ImgRequest( a, b ) {
                 console.log(a + '_' + b)
             try {
-                return require(`../../../../../backend/khweb/images/study/${a}_${b}.gif`
+                return require(`../../../../../backend/khweb/images/qna/${a}_${b}.gif`
                 )
             } catch (e) {
                 return require(`@/assets/logo.png`)
@@ -327,16 +313,13 @@ import { mapState } from 'vuex'
                         this.searchingResult.push(lists[i])
                     }
                 }
-
                 console.log('searching 결과 : ' + this.searchingResult)
                 console.log('0번 값은? : ' + this.searchingResult[0])
                 this.searchinOn = true
                 
                 if (this.word == '') {
                     this.searchinOn = false
-                }
-
-                
+                }                
             },
             replaceHtml(data) {
                 var text = data.replace(/(<([^>]+)>)/ig,"");
@@ -465,7 +448,7 @@ import { mapState } from 'vuex'
     justify-content: row;
     margin: 15px;
     padding: 20 20 5 5;
-    height: 150px;
+    height: 80px;
     border-bottom: 1px solid #BDBDBD;
 }
 .thumbnail {
