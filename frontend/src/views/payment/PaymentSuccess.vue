@@ -32,8 +32,7 @@ export default {
                 alert('결제실패!')
                 this.$router.push('/')
             }
-            
-            
+    
         }
 
         )

@@ -5,6 +5,8 @@ package.json
 package-lock.json
 
 
+package.json
+package-lock.json
 
 # local env files
 .env.local
