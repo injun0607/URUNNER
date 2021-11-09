@@ -2,8 +2,9 @@ package com.urunner.khweb.service.lecture;
 
 import com.urunner.khweb.controller.dto.lecture.LectureDto;
 import com.urunner.khweb.controller.dto.lecture.LectureListDto;
+import com.urunner.khweb.controller.dto.lecture.LectureVideoDto;
 import com.urunner.khweb.entity.lecture.Lecture;
-import com.urunner.khweb.entity.lecture.LectureImage;
+//import com.urunner.khweb.entity.lecture.LectureImage;
 import com.urunner.khweb.entity.lecture.LectureList;
 import com.urunner.khweb.entity.lecture.LectureVideo;
 import com.urunner.khweb.entity.sort.Category;
@@ -40,8 +41,8 @@ public class LectureServiceImpl implements LectureService {
     @Autowired
     private LectureRepository lectureRepository;
 
-    @Autowired
-    private LectureImageRepository LectureImageRepository;
+//    @Autowired
+//    private LectureImageRepository LectureImageRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -78,20 +79,20 @@ public class LectureServiceImpl implements LectureService {
 
         Lecture lecture = em.find(Lecture.class, id);
 
-        LectureImage lectureImage = LectureImage.builder()
-                .thumb_path(thum)
-                .detail_path(detail)
-                .build();
-
-        lectureImage.setLecture(lecture);
-
-        System.out.println(lectureImage.getThumb_path());
+//        LectureImage lectureImage = LectureImage.builder()
+//                .thumb_path(thum)
+//                .detail_path(detail)
+//                .build();
+//
+//        lectureImage.setLecture(lecture);
+//
+//        System.out.println(lectureImage.getThumb_path());
 
         lecture.setLectureThumb(thum);
 
-        lectureRepository.save(lecture);
+        lecture.setLectureDetail(detail);
 
-        LectureImageRepository.save(lectureImage);
+        lectureRepository.save(lecture);
     }
 
     @Override
@@ -111,17 +112,16 @@ public class LectureServiceImpl implements LectureService {
         lectureRepository.save(lecture);
 
         for (String s : category) {
-            System.out.println(s);
             cateList.add(s);
         }
 
         for (int i = 0; i < category.length; i++) {
             Category getCategory = categoryRepository.findByCategoryName(cateList.get(i));
             if (getCategory != null) {
-                CategoryLecture tt = new CategoryLecture();
-                tt.setLecture(lecture);
-                tt.setCategory(getCategory);
-                em.persist(tt);
+                CategoryLecture categoryLecture = new CategoryLecture();
+                categoryLecture.setLecture(lecture);
+                categoryLecture.setCategory(getCategory);
+                em.persist(categoryLecture);
             }
         }
 
@@ -187,14 +187,34 @@ public class LectureServiceImpl implements LectureService {
 
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<LectureDto> getLectureList(String writer) {
 
         List<Lecture> findAllLecture = lectureRepository.findByWriter(writer);
 
+        String query = "select c from Category c join CategoryLecture cl on cl.category = c " +
+                "join Lecture l on l = cl.lecture where l.id = :lectureId";
+
         return findAllLecture.stream().map(l ->
                 new LectureDto(l.getLecture_id(), l.getWriter(), l.getTitle(),
                         l.getDescription(), l.getPrice(), l.isInProgress(),
-                        l.isDiscounted(), l.getThumb_path())).collect(Collectors.toList());
+                        l.isDiscounted(), l.getThumb_path(), l.getDetail_path(),
+                        em.createQuery(query, Category.class)
+                                .setParameter("lectureId", l.getLecture_id()).
+                                getResultList()
+                )).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<LectureVideoDto> findAllLectureVideo(Long lectureListId) {
+
+        LectureList lectureList = em.find(LectureList.class, lectureListId);
+
+        List<LectureVideo> findAllLectureVideo = lectureVideoRepository.findByLectureList(lectureList);
+
+        return findAllLectureVideo.stream().map(l ->
+                new LectureVideoDto(l.getId(), l.getTitle(), l.getDescription(), l.getSequence(), l.getDuration(),
+                        l.getVideoPath())).collect(Collectors.toList());
     }
 }
