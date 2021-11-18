@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class LectureInfoDto {
+public class PaymentLectureInfoDto {
 
     List<String> lectureList;
 

@@ -7,6 +7,8 @@ import com.urunner.khweb.entity.sort.CategoryLecture;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,6 +23,8 @@ public class Lecture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long lecture_id;
 
+
+
     private String writer;
 
     private String title;
@@ -33,9 +37,12 @@ public class Lecture {
 
     private boolean discounted;
 
+
     private String thumb_path;
 
+
     private String detail_path;
+
 
     @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LectureList> lectureLists = new ArrayList<>();

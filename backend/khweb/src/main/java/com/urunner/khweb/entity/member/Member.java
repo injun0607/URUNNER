@@ -1,6 +1,7 @@
 package com.urunner.khweb.entity.member;
 
 import com.urunner.khweb.controller.dto.MemberRes;
+import com.urunner.khweb.entity.lecture.PurchasedLecture;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +32,8 @@ public class Member {
     private String introduce;
     private String nickname;
 
+
+
     @CreationTimestamp
     private Date regDate;
 
@@ -40,6 +43,14 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
 
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JoinColumn(name = "member_no")
+    private List<PurchasedLecture> purchasedLectureList = new ArrayList<>();
+
+    public void addPurchasedLecture(PurchasedLecture purchasedLecture){
+        purchasedLecture.setMemberNo(this.memberNo);
+        purchasedLectureList.add(purchasedLecture);
+    }
 
     public Member(String email, String password, String name, String introduce,String nickname) {
 
@@ -50,6 +61,7 @@ public class Member {
         this.introduce = introduce;
 
     }
+
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "member_no")

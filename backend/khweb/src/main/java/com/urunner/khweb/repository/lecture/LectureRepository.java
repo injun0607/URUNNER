@@ -9,5 +9,6 @@ import java.util.List;
 public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     public List<Lecture> findByWriter(String writer);
+    public Lecture findByTitle(String title);
 
 }
