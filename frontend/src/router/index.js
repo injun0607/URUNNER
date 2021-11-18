@@ -109,7 +109,6 @@ export default new VueRouter({
               }, {
                 path: '/changepw',
                 component: () => import ("../components/ChangePasswordForm.vue")
-
             },
             {
               path: '/coupons',
