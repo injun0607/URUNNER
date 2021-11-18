@@ -2,13 +2,12 @@ package com.urunner.khweb.entity.lecture;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.urunner.khweb.entity.sort.Category;
+import com.urunner.khweb.entity.mypage.Cart;
+import com.urunner.khweb.entity.mypage.WishList;
 import com.urunner.khweb.entity.sort.CategoryLecture;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -29,6 +28,7 @@ public class Lecture {
 
     private String title;
 
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     private Long price;
@@ -44,17 +44,32 @@ public class Lecture {
     private String detail_path;
 
 
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String content;
+
+    private String grade;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LectureList> lectureLists = new ArrayList<>();
 
 //    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<LectureImage> lecture_images = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CategoryLecture> categoryList = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cart> cartList = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WishList> wishList = new ArrayList<>();
+
     @Builder
-    public Lecture(String writer, String title,
+    public Lecture(String writer, String title, String content, String grade,
                    String description, Long price, boolean inProgress, boolean discounted) {
         this.writer = writer;
         this.title = title;
@@ -62,6 +77,8 @@ public class Lecture {
         this.price = price;
         this.inProgress = inProgress;
         this.discounted = discounted;
+        this.content = content;
+        this.grade = grade;
     }
 
     public void setWriter(String writer) {
@@ -96,6 +113,10 @@ public class Lecture {
     public void setLectureDetail(String detail_path) {
         this.detail_path = detail_path;
     }
+
+    public void setContent(String content) { this.content = content; }
+
+    public void setGrade(String grade) { this.grade = grade; }
 
     public void exist(Lecture lecture) throws Exception {
         if (lecture.getLecture_id() == null) {

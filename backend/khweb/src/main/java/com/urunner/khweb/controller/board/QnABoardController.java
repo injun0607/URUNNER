@@ -1,13 +1,9 @@
 package com.urunner.khweb.controller.board;
 
-import com.urunner.khweb.controller.dto.QnARequest;
-import com.urunner.khweb.controller.dto.StudyRequest;
+import com.urunner.khweb.controller.dto.board.QnARequest;
 import com.urunner.khweb.entity.board.QnA;
 import com.urunner.khweb.entity.board.QnAMember;
-import com.urunner.khweb.entity.board.Study;
-import com.urunner.khweb.entity.board.StudyMember;
 import com.urunner.khweb.service.board.QnABoardService;
-import com.urunner.khweb.service.board.StudyBoardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,7 +37,14 @@ public class QnABoardController {
     public ResponseEntity<List<QnA>> getLists () throws Exception {
         log.info("getStudyLists() ");
 
-        return new ResponseEntity<>(service.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(service.selectQnAList(), HttpStatus.OK);
+    }
+
+    @GetMapping("/lists/{complete}")
+    public ResponseEntity<List<QnA>> getListsWithFilter (@PathVariable("complete") String complete) throws Exception {
+        log.info("complete value : " + complete);
+
+        return new ResponseEntity<>(service.findByComplete(complete), HttpStatus.OK);
     }
 
     @GetMapping("/{boardNo}")
@@ -52,21 +55,12 @@ public class QnABoardController {
         return new ResponseEntity<>(board, HttpStatus.OK);
     }
 
-    @GetMapping("/memberList/{boardNo}") // study에 지원한 memberList 요청
+    @GetMapping("/memberList/{boardNo}")
+    // study에 지원한 memberList 요청
     public ResponseEntity<List<QnAMember>> memberList(@PathVariable("boardNo") Long boardNo){
-
-        log.info("****");
         System.out.println(boardNo);
-        log.info("****");
-        log.info("****");
-        log.info("****");
-        log.info("****");
+
         List<QnAMember> member = service.selectStudyBoardNo(boardNo);
-        log.info("****");
-        log.info("****");
-        log.info("study memberList 값은 : " + member);
-        log.info("****");
-        log.info("****");
 
         return new ResponseEntity<>(member, HttpStatus.OK);
     }
@@ -96,7 +90,7 @@ public class QnABoardController {
 
     @PutMapping ("/{boardNo}")
     public ResponseEntity<QnA> modify(@PathVariable("boardNo") Long boardNo,
-                                       @Validated @RequestBody QnARequest qnARequest) throws Exception {
+                                      @Validated @RequestBody QnARequest qnARequest) throws Exception {
         log.info(":::: post modify request from vue");
         log.info(":::: RequestBody value : " + qnARequest);
 

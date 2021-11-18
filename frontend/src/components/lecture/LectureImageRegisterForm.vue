@@ -34,7 +34,6 @@
 <script>
 import axios from 'axios'
 import { API_BASE_URL } from '@/constants/index.js'
-
 export default {
   data() {
     return {
@@ -44,8 +43,8 @@ export default {
     }
   },
   methods: {
-     async onSubmit() {
-      try {
+     onSubmit() {
+      
         const lectureId = this.$route.params.lectureId
         const formData = new FormData();
         formData.append("thumbnailImage", this.thumbnailImage);
@@ -55,18 +54,19 @@ export default {
         console.log(formData);
         console.log(this.thumbnailImage);
 
-        const { data1 } = await axios.post( API_BASE_URL + "/lecture/upload/image/thumbnail", formData,
+        axios.post( API_BASE_URL + "/lecture/upload/image/thumbnail", formData,
           {
             headers: {
               "Content-Type": "multipart/form-data",
             },
           }
         )
-        console.log(data1);
-        this.$router.push('/mypage/lecture/lectureList')
-      } catch (err) {
-        console.log(err);
-      }
+        .then(() => {
+          this.$router.push('/mypage/lecture/lectureList')
+        })
+        .catch(err => {
+          console.log(err);
+        })
     },
     // 파일 변경 시 이벤트 핸들러
     thumbFile(file) {

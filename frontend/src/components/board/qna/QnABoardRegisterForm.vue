@@ -1,24 +1,7 @@
 <template>
-    <form @submit.prevent="onSubmit">
-        <v-text-field label="제목" v-model="title"></v-text-field>
-        <editor placeholder="Write something …" @content="fusion"/>
-        <!-- 이미지 등록 폼 -->
-        <div style="margin-bottom: 10px">
-            <div class="image-box">
-                <label>이미지 추가
-                    <input
-                        type="file"
-                        class="files"
-                        id="files"
-                        ref="files"
-                        multiple="multiple"
-                        v-on:change="handleFileUpload()"
-                        style="pointer:cursor"></label>
-                    <button @click="fileDeleteButton()" class="image_btn">이미지 삭제</button>
-            </div>
-            <div class="preview_image">
-                <img :src="preview"></div>
-        </div>
+    <form @submit.prevent="boardRegist">
+        <v-text-field label="제목" v-model="title" maxlength="45"></v-text-field>
+        <editor placeholder="Write something …" @fromEditor="boardRegist"/>        
     </form>    
 </template>
 
@@ -39,81 +22,32 @@ export default {
             writer: this.$store.state.moduleA.email,
             files: '',
             preview: '',
-            name: this.$store.state.moduleA.name,
+            nickname: this.$store.state.moduleA.nickname,
             content: '',
             complete: false,
             currentNum: 1,
             views: 1,
-            comments: 0
+            comments: 0,
+            tags: '',
+            notice: false,
         }
     },
-    methods: {
-        catchContent(data) {
-            this.content = data
-        },
-        test() {
-            console.log(this.name)
-            console.log(this.$store.state.moduleA.email)
-            console.log(this.content)
-        },
-        handleFileUpload () {
-                this.files = this.$refs.files.files
-                this.preview = URL.createObjectURL(this.files[0])
-                console.log(this.files[0])
-        },
-        onsubmit () {
-            let formData = new FormData()
-            for (var idx = 0; idx < this.files.length; idx++) {
-                formData.append('fileList', this.files[idx])
-                console.log(this.files[idx])
-            }
-            
-            let ownerId = this.$store.state.moduleA.email
-            formData.append('id', ownerId)
-            let no = this.$store.state.boardNo
-            formData.append('no', no)
-            axios.post('http://localhost:7777/image/uploadImg_QnA', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-                
-            })
-            .then (res => {
-                this.response = res.data
-            })
-            .catch (res => {
-                this.response = res.message
-            }) 
-            alert('Processing Complete!')
-            this.$router.push({
+    methods: {      
+        boardRegist (data) {
+            this.content = data.content
+            this.tags = data.tags
+            this.notice = data.notice //여기까지 에디터 data
+            const { title, writer, content, nickname, complete, currentNum, views, comments, tags, notice } = this
+            axios.post('http://localhost:7777/qnaboard/register', { title, writer, content, nickname, complete, currentNum, views, comments, tags, notice } )
+                    .then(res => {
+                        this.$store.state.boardNo = res.data.boardNo.toString()
+                        this.$router.push({
                             name: 'QnABoardListPage'
                         })
-        },
-        fileDeleteButton () {
-            this.files = '',
-            this.preview = ''
-        },       
-        boardRegist (data) {            
-            this.content = data
-            const { title, writer, content, name, complete, currentNum, views, comments } = this
-            console.log("const값좀보자")
-            console.log("const값좀보자")
-            console.log({ title, writer, content, name, complete, currentNum, views, comments })
-            axios.post('http://localhost:7777/qnaboard/register', { title, writer, content, name, complete, currentNum, views, comments } )
-                    .then(res => {
-                        console.log(res.data)
-                        this.$store.state.boardNo = res.data.boardNo.toString()
-                        console.log(this.$store.state.boardNo)
                     })
                     .catch(res => {
                         alert(res.response.data.message)
                     })
-        },
-        fusion (data) {
-            setTimeout(() => {
-                this.onsubmit()
-                }, 1000)
-            this.boardRegist(data)
         }
     }
 }

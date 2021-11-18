@@ -1,55 +1,56 @@
 <template>
     <div>
         <div class="main_box">
-            <!-- 제목 -->
-            <div class="title_box">
-                <h4 class="page_title">
-                    <v-icon>mdi-exclamation-thick</v-icon>
-                    <span>자유게시판</span></h4>
-            </div>            
             <!-- 게시글 -->
             <div class="post_list">
                 <div class="post_card_box">
                     <div class="searching_message_box">
                         <div class="searching_message">
                             <div style="margin-top:20px;"><b>{{board.title}}</b></div>
-                            <div><p><b class="post_tag">#TAG</b> / {{board.name}} / {{ $moment(board.regDate).add(-0, 'hours').format('YY-MM-DD HH:mm') }}</p></div>
+                            <div class="post_tag">
+                                <div v-for="tag in classifyTag(board.tags)" :key="tag">
+                                        <btn class="tag_box_button">#{{ tag.text }}&nbsp;</btn>
+                                </div>
+                                <div v-show="board.tags != '#'" class="post_tag_either"></div>
+                                <div class="post_tag_either"><h v-show="board.notice =='false'">&nbsp;/&nbsp;{{board.nickname}}&nbsp;/&nbsp;</h>
+                                {{ $moment(board.regDate).add(-0, 'hours').format('YY-MM-DD HH:mm') }}</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="content_img">
-                    <img :src="ImgRequest()" class="test">
                 </div>
                 <div class="post_content">
                     <div v-html="board.content">{{ board.content }}</div>
                 </div>
-            </div>
-            <!-- 지원자 목록 -->
-            <v-container fluid>
-                <v-row justify="center">
-                <v-subheader>지원자 목록</v-subheader>
-                    <v-expansion-panels popout>
-                        <v-expansion-panel
-                        v-for="(member, i) in this.$store.state.studyMembers"
-                        :key="i" hide-actions>
-                        <v-expansion-panel-header>
-                            <v-row align="center" class="spacer" no-gutters>
-                                <v-col class="hidden-xs-only" sm="5" md="3">
-                                    <strong v-html="member.name"></strong>
-                                </v-col>
-                            </v-row>
-                        </v-expansion-panel-header>
-                        <v-expansion-panel-content>
-                            <v-divider></v-divider>
-                            <v-card-text v-text="member.introduce"></v-card-text>
-                        </v-expansion-panel-content>
-                    </v-expansion-panel>
-                </v-expansion-panels>
-                </v-row>
-            </v-container>
-            <v-btn @click="appl(board.boardNo)">지원하기</v-btn>
-            <v-btn @click="endRecruit(board.boardNo)">모집 마감</v-btn>
-        </div>        
+                <div class="complete_btn_align">
+                    <v-btn v-show="this.$store.state.moduleA.email = board.writer" @click="appl(board.boardNo)" style="margin-right:10px">지원하기</v-btn>
+                    <v-btn v-show="this.$store.state.moduleA.email = board.writer" @click="endRecruit(board.boardNo)">모집 마감</v-btn>
+                </div>
+                <!-- 지원자 목록 -->
+                <div class="member_list">
+                    <v-row justify="center">
+                    <v-subheader>지원자 목록</v-subheader>
+                        <v-expansion-panels popout>
+                            <v-expansion-panel
+                            v-for="(member, i) in this.$store.state.studyMembers"
+                            :key="i" hide-actions>
+                            <v-expansion-panel-header>
+                                <v-row align="center" class="spacer" no-gutters>
+                                    <v-col class="hidden-xs-only" sm="5" md="3">
+                                        <strong v-html="member.nickname"></strong>
+                                    </v-col>
+                                </v-row>
+                            </v-expansion-panel-header>
+                            <v-expansion-panel-content>
+                                <v-divider></v-divider>
+                                <v-card-text v-text="member.introduce"></v-card-text>
+                            </v-expansion-panel-content>
+                        </v-expansion-panel>
+                    </v-expansion-panels>
+                    </v-row>
+                    <br>
+                </div>
+            </div>            
+        </div>
     </div>
 </template>
 
@@ -61,7 +62,7 @@ export default {
     name: 'StudyBoardRead',
     data () {
         return {
-            name: '',
+            nickname: '',
             email: '',
             introduce: 'HELLO WORLD!',
             refresh: 1,
@@ -85,10 +86,10 @@ export default {
             }
         },
         appl(data) {
-            this.name = this.$store.state.moduleA.name
+            this.nickname = this.$store.state.moduleA.nickname
             this.email = this.$store.state.moduleA.email
-            const { name, email, introduce } = this
-            axios.put(`http://localhost:7777/studyboard/apply/${data}`, { name, email, introduce })
+            const { nickname, email, introduce } = this
+            axios.put(`http://localhost:7777/studyboard/apply/${data}`, { nickname, email, introduce })
                     .then(res => {
                         console.log(res)
                         this.refresh += 1
@@ -101,11 +102,13 @@ export default {
 
         },
         endRecruit(data) {
-            this.board.complete = !this.board.complete
-            console.log('this.board는 ')
-            console.log(this.board)
-            const { title, content, fit, complete, currentNum } = this.board
-            axios.put(`http://localhost:7777/studyboard/${data}`, { title, content, fit, complete, currentNum })
+            if(this.board.complete) {
+                this.board.complete = false
+            } else {
+                this.board.complete = true
+            }
+            const { title, content, fit, complete, currentNum, notice} = this.board
+            axios.put(`http://localhost:7777/studyboard/${data}`, { title, content, fit, complete, currentNum, notice })
                     .then(res => {
                         console.log(res)
                         this.$router.push({
@@ -116,6 +119,11 @@ export default {
                     .catch(err => {
                         alert(err.response.data.message)
                     })
+        },
+        classifyTag(data) {
+            var arr = JSON.parse(data)
+            console.log(arr)
+            return arr
         }
     }
 }
@@ -123,8 +131,12 @@ export default {
 
 <style scoped>
 .post_list {
-    width:70vw;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width:95vw;
     max-width: 1000px;
+    margin: 0px;
 }
 .main_box {
     color: #424242;
@@ -161,8 +173,7 @@ export default {
     border-style: none !important;
 }
 .searching_message_box {
-    width:70vw;
-    height: 150px;
+    width:95vw;
     max-width: 1000px;
     display:flex;
     justify-content: center;
@@ -171,7 +182,7 @@ export default {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width:70vw;
+    width:100vw;
     max-width: 900px;
     border-top: 1px solid #BDBDBD;
     border-bottom: 1px solid #BDBDBD;
@@ -217,11 +228,6 @@ export default {
 .post_card_box {
 
 }
-.content_img {
-    text-align: center;
-    width: 70vw;
-    max-width: 1000px;
-}
 .thumbnail {
     margin-right: 20px;
     height: 140px !important; 
@@ -239,10 +245,21 @@ export default {
     width: 500px;
 }
 .post_tag {
+    display: flex;
+    justify-content: center;
+    align-content: center;
     color: #0288D1;
     font-weight: bold;
     font-size: 16px !important;    
     letter-spacing: 0px !important;
+    margin-bottom: 20px;
+}
+.post_tag_either {
+    display: flex;
+    justify-self: center;
+    align-self: center;
+    font-size: 15px !important;
+    color: #757575;
 }
 .post_title {
     margin: 0 0 0 0px;
@@ -255,7 +272,7 @@ export default {
     text-decoration: underline;
 }
 .post_content {
-    margin: 0vw 3vw 0vw 3vw;
+    margin: 10vw 3vw 0vw 3vw;
     width: 60vw;
     font-size: 15px;
     color: #757575;
@@ -308,4 +325,22 @@ export default {
 }
 a { text-decoration:none !important }
 a:hover { text-decoration:none !important }
+
+.complete_btn_align {
+    display: flex;
+    justify-content: center;
+}
+.tag_box_button {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    font-size: 18px;
+}
+.member_list {
+    display: flex;
+    justify-self: center;
+    align-self: center;
+    width: 300px;
+    margin: 30px;
+}
 </style>

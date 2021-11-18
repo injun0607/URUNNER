@@ -2,19 +2,25 @@
     <div>
         <v-container>
         <h2 class="board_title">글쓰기</h2>
-        <board-register-form/>
+        <!-- <free-board-register-form :boardNo="saveBoardNo"/> -->
+        <free-board-register-form/>
         </v-container>
     </div>
 </template>
 
 <script>
-import BoardRegisterForm from '@/components/board/free/BoardRegisterForm.vue'
+import FreeBoardRegisterForm from '@/components/board/free/FreeBoardRegisterForm.vue'
 
 export default {
-    name: 'BoardRegisterPage',
+    name: 'FreeBoardRegisterPage',
     components: {
-        BoardRegisterForm
-    }
+        FreeBoardRegisterForm
+    },
+    // methos : {
+    //     saveBoardNo(data) {
+    //         this.$emit("BoardNo", data)
+    //     }
+    // }
 }
 </script>
 

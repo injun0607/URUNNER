@@ -2,23 +2,18 @@ package com.urunner.khweb.controller.lecture;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.urunner.khweb.controller.dto.lecture.DtoWrapper;
-import com.urunner.khweb.controller.dto.lecture.LectureDto;
-import com.urunner.khweb.controller.dto.lecture.LectureListDto;
-import com.urunner.khweb.controller.dto.lecture.LectureParse;
+import com.urunner.khweb.controller.dto.lecture.*;
 import com.urunner.khweb.service.lecture.LectureService;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.MediaTypeFactory;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.support.ResourceRegion;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,16 +68,7 @@ public class LectureController {
 
             System.out.println(path.toString());
 
-            if (!folder.exists()) {
-                try {
-                    folder.mkdir();
-                    System.out.println("폴더생성함");
-                } catch (Exception e) {
-                    e.getStackTrace();
-                }
-            } else {
-                System.out.println("이미 존재하는 폴더입니다.");
-            }
+            mkdirFolder(folder);
 
             UUID uuid = UUID.randomUUID();
             String randomString = uuid.toString() + "_";
@@ -113,23 +99,16 @@ public class LectureController {
         } catch (Exception e) {
             return null;
         }
-        UrlResource image = new UrlResource("classpath:" + imageLocation + "/" + authentication.getName() + "/" + this.detail);
+//        UrlResource image = new UrlResource("classpath:" + imageLocation + "/" + authentication.getName() + "/" + this.detail);
 
-        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                .contentType(MediaTypeFactory.getMediaType(image).orElse(MediaType.APPLICATION_OCTET_STREAM))
-                .body(image);
+        return null;
     }
 
     @GetMapping("/image/{path}/{writer}")
     public ResponseEntity<UrlResource> getThumnail(@PathVariable("path") String path, @PathVariable("writer") String writer) throws MalformedURLException {
 
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//
-//        System.out.println(authentication);
-
         UrlResource image = new UrlResource("classpath:" + imageLocation + "/" + writer + "/" + path);
 
-        System.out.println("testestsdtest                        "+image);
         return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
                 .contentType(MediaTypeFactory.getMediaType(image).orElse(MediaType.APPLICATION_OCTET_STREAM))
                 .body(image);
@@ -145,6 +124,8 @@ public class LectureController {
         String title = lectureInfo1.getString("title");
         Long price = lectureInfo1.getLong("price");
         String description = lectureInfo1.getString("description");
+        String content = lectureInfo1.getString("content");
+        String grade = lectureInfo1.getString("grade");
         String category = lectureInfo1.getString("category");
 
         String[] categoryArray = category.split(",");
@@ -152,7 +133,32 @@ public class LectureController {
             System.out.println(s);
         }
 
-        lectureService.lectureRegister(authentication.getName(), title, price, description, category);
+        lectureService.lectureRegister(authentication.getName(), title, price, description, content, grade, category);
+        System.out.println(Arrays.toString(categoryArray));
+
+        return null;
+    }
+
+    @PutMapping("/modifyLecture")
+    public String modifyLecture(@RequestBody LinkedHashMap info) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        org.json.JSONObject lectureInfo1 = LectureParse.parsingInfoWithString(info, "lectureInfo");
+
+        Long lectureId = lectureInfo1.getLong("lectureId");
+        String title = lectureInfo1.getString("title");
+        Long price = lectureInfo1.getLong("price");
+        String description = lectureInfo1.getString("description");
+        String category = lectureInfo1.getString("category");
+        String content = lectureInfo1.getString("content");
+        String grade = lectureInfo1.getString("grade");
+
+        String[] categoryArray = category.split(",");
+        for (String s : categoryArray) {
+            System.out.println(s);
+        }
+
+        lectureService.modifyLecture(lectureId, authentication.getName(), title, price, description, content, grade, category);
         System.out.println(Arrays.toString(categoryArray));
 
         return null;
@@ -161,7 +167,6 @@ public class LectureController {
     @PostMapping("/upload/video/lecture")
     public @ResponseBody
     String videoUpload(@RequestParam("video") List<MultipartFile> video,
-//                         long으로 받는지 확인
                        @RequestParam("duration") Long duration,
                        @RequestParam("title") String title,
                        @RequestParam("description") String description,
@@ -173,8 +178,6 @@ public class LectureController {
         log.info("description : " + description.toString());
         log.info("id : " + id.toString());
 
-//        한시간넘으면 변환할때 이부분 수정하기 1시간 이런식
-//        70min 이런식이면 그대로 ㄱ
         String dur = Long.toString(duration);
 
         ClassPathResource resource1 = new ClassPathResource(videoLocation);
@@ -187,18 +190,7 @@ public class LectureController {
             String dirPath = path.toString() + "/" + authentication.getName();
             File folder = new File(dirPath);
 
-            System.out.println(path.toString());
-
-            if (!folder.exists()) {
-                try {
-                    folder.mkdir();
-                    System.out.println("폴더생성함");
-                } catch (Exception e) {
-                    e.getStackTrace();
-                }
-            } else {
-                System.out.println("이미 존재하는 폴더입니다.");
-            }
+            mkdirFolder(folder);
 
             UUID uuid = UUID.randomUUID();
             String randomString = uuid.toString() + "_";
@@ -217,6 +209,58 @@ public class LectureController {
         }
         return "upload success";
     }
+
+    //    나중에 쓰는부분 다붙이기
+    @Transactional
+    @PostMapping("/modify/video/lecture")
+    public @ResponseBody
+    DtoWrapper modifyVideoUpload(@RequestParam("video") List<MultipartFile> video,
+//                         long으로 받는지 확인
+                                 @RequestParam("duration") Long duration,
+                                 @RequestParam("title") String title,
+                                 @RequestParam("description") String description,
+                                 @RequestParam("id") Long id
+    ) throws IOException {
+
+        lectureService.modifyVideoDelete(id);
+
+        String lectureName = null;
+
+        String dur = Long.toString(duration);
+
+        ClassPathResource resource1 = new ClassPathResource(videoLocation);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("sc 객체 : " + authentication.getName());
+
+        try {
+            Path path = Paths.get(resource1.getURI());
+            String dirPath = path.toString() + "/" + authentication.getName();
+            File folder = new File(dirPath);
+
+            System.out.println(path.toString());
+
+            mkdirFolder(folder);
+
+            UUID uuid = UUID.randomUUID();
+            String randomString = uuid.toString() + "_";
+
+
+            for (MultipartFile multipartFile : video) {
+                String lecture = "Lecture_" + randomString + multipartFile.getOriginalFilename();
+                FileOutputStream writer = new FileOutputStream(dirPath + "/" + lecture);
+                writer.write(multipartFile.getBytes());
+                writer.close();
+                log.info("name for db : " + lecture);
+                lectureName = lecture;
+            }
+        } catch (Exception e) {
+            log.info("에러");
+        }
+
+        return new DtoWrapper(lectureService.modifyVideo(title, description, dur, id, lectureName));
+    }
+
 
     @GetMapping("/getLectureList")
     public List<LectureDto> getLectureList() {
@@ -257,13 +301,13 @@ public class LectureController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @PutMapping("/modifyLecture")
-    public ResponseEntity modifyLecture(@RequestBody LectureDto lectureDto) {
-
-        lectureService.modifyLecture(lectureDto);
-
-        return new ResponseEntity(HttpStatus.OK);
-    }
+//    @PutMapping("/modifyLecture")
+//    public ResponseEntity modifyLecture(@RequestBody LectureDto lectureDto) {
+//
+//        lectureService.modifyLecture(lectureDto);
+//
+//        return new ResponseEntity(HttpStatus.OK);
+//    }
 
 
     @GetMapping("/getSectionTopic/{lectureId}")
@@ -302,4 +346,90 @@ public class LectureController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    @PostMapping("/inProgressToFalse/{id}")
+    public ResponseEntity inProgressToFalse(@PathVariable("id") Long id) {
+
+        lectureService.inProgressToFalse(id);
+
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PostMapping("/inProgressToTrue/{id}")
+    public ResponseEntity inProgressToTrue(@PathVariable("id") Long id) {
+
+        lectureService.inProgressToTrue(id);
+
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @GetMapping("/getLectureDetailInfo/{lectureId}")
+    public DtoWrapper2 getLectureDetailInfo(@PathVariable("lectureId") Long lectureId) {
+        System.out.println(lectureId);
+
+        return lectureService.getLectureDetailInfo(lectureId);
+    }
+
+    @GetMapping("/getAllLecture")
+    public List<LectureDto> getAllLecture() {
+
+        return lectureService.getAllLectureList();
+    }
+
+    @GetMapping("/getLectureBanner/{page}")
+    public DtoWrapper getLectureBanner(@PathVariable("page") int page) {
+
+        return lectureService.lectureBanner(page);
+    }
+
+    @GetMapping("/getVideoInfo/{videoId}")
+    public DtoWrapper getVideoInfo(@PathVariable Long videoId) {
+
+        return lectureService.getVideoInfoDetail(videoId);
+    }
+
+    @GetMapping("/videos/{lectureId}")
+    public ResponseEntity<ResourceRegion> getVideo(@PathVariable Long lectureId,
+                                                   @RequestHeader HttpHeaders headers) throws IOException {
+
+        Optional<LectureVideoInfo> videoInfo = lectureService.getVideoInfo(lectureId);
+
+        log.info("getVideo");
+
+        UrlResource video = new UrlResource("classpath:" + videoLocation + "/" + videoInfo.get().getWriter() + "/" + videoInfo.get().getPath());
+        ResourceRegion region = resourceRegion(video, headers);
+        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                .contentType(MediaTypeFactory.getMediaType(video).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                .body(region);
+    }
+
+    private ResourceRegion resourceRegion(UrlResource video, HttpHeaders headers) throws IOException {
+
+        final long chunkSize = 1000000L;
+        long contentLength = video.contentLength();
+
+        HttpRange httpRange = headers.getRange().stream().findFirst().get();
+        if(httpRange != null) {
+            long start = httpRange.getRangeStart(contentLength);
+            long end = httpRange.getRangeEnd(contentLength);
+            long rangeLength = Long.min(chunkSize, end - start + 1);
+            return new ResourceRegion(video, start, rangeLength);
+        } else {
+            long rangeLength = Long.min(chunkSize, contentLength);
+            return new ResourceRegion(video, 0, rangeLength);
+        }
+    }
+
+    public void mkdirFolder(File folder) {
+
+        if (!folder.exists()) {
+            try {
+                folder.mkdir();
+                System.out.println("폴더생성함");
+            } catch (Exception e) {
+                e.getStackTrace();
+            }
+        } else {
+            System.out.println("이미 존재하는 폴더입니다.");
+        }
+    }
 }

@@ -33,7 +33,7 @@ class KhwebApplicationTests {
 		/*
 		public Lecture(String writer, String title,
 				String description, Long price, boolean inProgress, boolean discounted)
-		*/
+
 		Lecture lecture1 = new Lecture(null,"강의1",null,null,false,false);
 		lectureRepository.save(lecture1);
 		Lecture lecture2 = new Lecture(null,"강의2",null,null,false,false);

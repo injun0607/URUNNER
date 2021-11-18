@@ -1,27 +1,28 @@
 <template>
     <div>
-        <div class="main_box">
-            <!-- 제목 -->
-            <div class="title_box">
-                <h4 class="page_title">
-                    <v-icon>mdi-exclamation-thick</v-icon>
-                    <span>자유게시판</span></h4>
-            </div>
+        <div class="main_box">    
             <!-- 게시글 -->
             <div class="post_list">
                 <div class="post_card_box">
                     <div class="searching_message_box">
                         <div class="searching_message">
                             <div style="margin-top:20px;"><b>{{board.title}}</b></div>
-                            <div><p><b class="post_tag">#TAG</b> / {{board.name}} / {{ $moment(board.regDate).add(-0, 'hours').format('YY-MM-DD HH:mm') }}</p></div>
+                            <div class="post_tag">
+                                <div>
+                                    <btn class="tag_box_button">{{ classifyTag(board.tags).text }}&nbsp;</btn>
+                                </div>
+                                <div v-show="board.tags != '#'" class="post_tag_either"></div>
+                                <div class="post_tag_either"><h v-show="board.notice =='false'">&nbsp;/&nbsp;{{board.nickname}}&nbsp;/&nbsp;</h>
+                                {{ $moment(board.regDate).add(-0, 'hours').format('YY-MM-DD HH:mm') }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="content_img">
-                    <img :src="ImgRequest()" class="test">
-                </div>
                 <div class="post_content">
                     <div v-html="board.content">{{ board.content }}</div>
+                </div>
+                <div v-show="board.notice == 'false'" class="complete_btn_align">
+                    <v-btn v-show="this.$store.state.isAuth = 'true'" @click="endRecruit(board.boardNo)">답변 완료</v-btn>
                 </div>
             </div>
         </div>        
@@ -29,8 +30,21 @@
 </template>
 
 <script>
+
+import axios from 'axios'
+
 export default {
-    name: 'BoardRead',
+    name: 'InqBoardRead',
+    data () {
+        return {
+            nickname: '',
+            email: '',
+            introduce: 'HELLO WORLD!',
+            refresh: 1,
+            members: this.$store.state.qnaMembers,
+            complete: '',
+        }
+    },
     props: {
         board: {
             type: Object,
@@ -40,11 +54,35 @@ export default {
     methods : {
         ImgRequest() {
             try {
-                return require(`../../../../../backend/khweb/images/free/${this.board.writer}_${this.board.boardNo}.gif`
+                return require(`../../../../../backend/khweb/images/qna/${this.board.writer}_${this.board.boardNo}.gif`
                 )
             } catch (e) {
                 return require(`@/assets/logo.png`)
             }
+        },
+        endRecruit(data) {
+            if(this.board.complete == 'true') {
+                this.board.complete = false
+            } else {
+                this.board.complete = true
+            }
+            const { title, content, complete, currentNum, tags, notice } = this.board
+            axios.put(`http://localhost:7777/inqboard/${data}`, { title, content, complete, currentNum, tags, notice })
+                    .then(res => {
+                        console.log(res)
+                        this.$router.push({
+                            name: 'InqBoardReadPage',
+                            params: { boardNo: this.boardNo }
+                        })
+                    })
+                    .catch(err => {
+                        alert(err.response.data.message)
+                    })
+        },
+        classifyTag(data) {
+            var arr = JSON.parse(data)
+            console.log(arr)
+            return arr
         }
     }
 }
@@ -52,8 +90,12 @@ export default {
 
 <style scoped>
 .post_list {
-    width:70vw;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width:95vw;
     max-width: 1000px;
+    margin: 0px;
 }
 .main_box {
     color: #424242;
@@ -90,8 +132,7 @@ export default {
     border-style: none !important;
 }
 .searching_message_box {
-    width:70vw;
-    height: 150px;
+    width:95vw;
     max-width: 1000px;
     display:flex;
     justify-content: center;
@@ -100,7 +141,7 @@ export default {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width:70vw;
+    width:100vw;
     max-width: 900px;
     border-top: 1px solid #BDBDBD;
     border-bottom: 1px solid #BDBDBD;
@@ -146,11 +187,6 @@ export default {
 .post_card_box {
 
 }
-.content_img {
-    text-align: center;
-    width: 70vw;
-    max-width: 1000px;
-}
 .thumbnail {
     margin-right: 20px;
     height: 140px !important; 
@@ -168,10 +204,21 @@ export default {
     width: 500px;
 }
 .post_tag {
+    display: flex;
+    justify-content: center;
+    align-content: center;
     color: #0288D1;
     font-weight: bold;
     font-size: 16px !important;    
     letter-spacing: 0px !important;
+    margin-bottom: 20px;
+}
+.post_tag_either {
+    display: flex;
+    justify-self: center;
+    align-self: center;
+    font-size: 15px !important;
+    color: #757575;
 }
 .post_title {
     margin: 0 0 0 0px;
@@ -184,7 +231,7 @@ export default {
     text-decoration: underline;
 }
 .post_content {
-    margin: 0vw 3vw 0vw 3vw;
+    margin: 10vw 3vw 0vw 3vw;
     width: 60vw;
     font-size: 15px;
     color: #757575;
@@ -237,4 +284,22 @@ export default {
 }
 a { text-decoration:none !important }
 a:hover { text-decoration:none !important }
+
+.complete_btn_align {
+    display: flex;
+    justify-content: center;
+}
+.tag_box_button {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    font-size: 18px;
+}
+.member_list {
+    display: flex;
+    justify-self: center;
+    align-self: center;
+    width: 300px;
+    margin: 30px;
+}
 </style>

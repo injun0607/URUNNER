@@ -1,6 +1,6 @@
 package com.urunner.khweb.service.board;
 
-import com.urunner.khweb.controller.dto.CommentRes;
+import com.urunner.khweb.controller.dto.board.CommentRes;
 import com.urunner.khweb.entity.board.StudyComment;
 import com.urunner.khweb.repository.board.study.StudyCommentRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ public class StudyCommentServiceImpl implements StudyCommentService {
     public StudyComment register(CommentRes commentRes) throws Exception {
 
         StudyComment commentEntity = new StudyComment(commentRes.getBoardNo(), commentRes.getContent(), commentRes.getWriter(),
-                                            commentRes.getName(), commentRes.getLayer(), commentRes.getGroupNo());
+                                            commentRes.getNickname(), commentRes.getLayer(), commentRes.getGroupNo());
 
         repository.save(commentEntity);
 
