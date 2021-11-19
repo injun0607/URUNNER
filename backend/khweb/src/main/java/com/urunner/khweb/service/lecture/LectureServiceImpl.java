@@ -5,9 +5,14 @@ import com.urunner.khweb.entity.lecture.Lecture;
 //import com.urunner.khweb.entity.lecture.LectureImage;
 import com.urunner.khweb.entity.lecture.LectureList;
 import com.urunner.khweb.entity.lecture.LectureVideo;
+import com.urunner.khweb.entity.member.Member;
+import com.urunner.khweb.entity.mypage.Cart;
+
+import com.urunner.khweb.entity.mypage.WishList;
 import com.urunner.khweb.entity.sort.Category;
 import com.urunner.khweb.entity.sort.CategoryLecture;
 import com.urunner.khweb.repository.lecture.*;
+import com.urunner.khweb.repository.member.MemberRepository;
 import com.urunner.khweb.repository.mypage.WishListRepository;
 import com.urunner.khweb.utility.LectureUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.naming.AuthenticationException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -50,6 +56,9 @@ public class LectureServiceImpl implements LectureService {
 
     @Autowired
     private LectureRepository lectureRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
 //    @Autowired
 //    private LectureImageRepository LectureImageRepository;
@@ -337,6 +346,42 @@ public class LectureServiceImpl implements LectureService {
     }
 
     @Override
+    public DtoWrapper mainCartList(int page) {
+
+        String query = "select l from Lecture l join l.cartList cl join cl.myPage mp join mp.member m " +
+                "where m.email = :email";
+
+        List<Lecture> email = em.createQuery(query, Lecture.class)
+                .setParameter("email", authentication())
+                .setFirstResult(page)
+                .setMaxResults(5)
+                .getResultList();
+
+        List<LectureDto> lectureDtos = email.stream().map(l ->
+                new LectureDto(l.getLecture_id(), l.getWriter(), l.getTitle(), l.getPrice(), l.isDiscounted(), l.getThumb_path())).collect(Collectors.toList());
+
+        return new DtoWrapper(lectureDtos);
+    }
+
+    @Override
+    public DtoWrapper mainWishList(int page) {
+
+        String query = "select l from Lecture l join l.wishList cl join cl.myPage mp join mp.member m " +
+                "where m.email = :email";
+
+        List<Lecture> email = em.createQuery(query, Lecture.class)
+                .setParameter("email", authentication())
+                .setFirstResult(page)
+                .setMaxResults(5)
+                .getResultList();
+
+        List<LectureDto> lectureDtos = email.stream().map(l ->
+                new LectureDto(l.getLecture_id(), l.getWriter(), l.getTitle(), l.getPrice(), l.isDiscounted(), l.getThumb_path())).collect(Collectors.toList());
+
+        return new DtoWrapper(lectureDtos);
+    }
+
+    @Override
     public List<LectureDto> getAllLectureList() {
         List<Lecture> findAllLectureList = lectureRepository.findAll();
 
@@ -367,11 +412,97 @@ public class LectureServiceImpl implements LectureService {
                         l.getCategoryList().stream().map(CategoryLecture::getCategory).collect(Collectors.toList())
                 ));
 
+        String username = authentication();
+        if (username.equals("anonymousUser")) {
+            log.info("로그인 되있지않은 사용자");
+        } else {
+            Member member = memberRepository.findByEmail(username);
+
+//            시간되면 fetch join으로 가져오기
+            List<Cart> carts = new ArrayList<>(member.getMyPage().getCartList());
+
+            List<WishList> wishLists = new ArrayList<>(member.getMyPage().getWishLists());
+
+            if (wishLists.size() != 0) {
+                for (int i = 0; i < lectureDtos.getContent().size(); i++) {
+                    for (int j = 0; j < wishLists.size(); j++) {
+                        boolean exist = lectureDtos.getContent().get(i).getId().equals(wishLists.get(j).getLecture().getLecture_id());
+                        System.out.println("매칭 여부 확인 : " + exist);
+                        if (exist) {
+                            lectureDtos.getContent().get(i).setWishList(true);
+                        }
+                    }
+                }
+            }
+
+            if (carts.size() != 0) {
+                for (int i = 0; i < lectureDtos.getContent().size(); i++) {
+                    for (int j = 0; j < carts.size(); j++) {
+                        boolean exist = lectureDtos.getContent().get(i).getId().equals(carts.get(j).getLecture().getLecture_id());
+                        System.out.println("매칭 여부 확인 : " + exist);
+                        if (exist) {
+                            lectureDtos.getContent().get(i).setCart(true);
+                        }
+                    }
+                }
+            }
+
+//            for (int i = 0; i < lectureDtos.getSize(); i++) {
+//                System.out.println("강의 dto 사이즈 " +lectureDtos.getSize());
+//                for (int j = 0; j < carts.size(); j++) {
+//                    System.out.println("카트 사이즈" + carts.size());
+//                    int z = i;
+//                    System.out.println("임시 카운트 : " + z);
+//            for (int i = 0; i < lectureDtos.getSize(); i++) {
+//                int j = i;
+////                boolean b = carts.stream().anyMatch(cart -> cart.getLecture().getLecture_id().equals(lectureDtos.get.get(j).getId()));
+//                boolean b = lectureDtos.stream().anyMatch(lectureDto -> lectureDto.getId().equals(carts.get(j).getId()));
+//                System.out.println("매칭 여부 " + b);
+//            }
+//                }
+//            }
+
+
+
+        }
+
+
+
         log.info(findAllLecture.get().findFirst().get().getCategoryList().toString());
 
         return new DtoWrapper(lectureDtos);
     }
 
+    @Override
+    public DtoWrapper getCartList() {
+
+        String query = "select l from Lecture l join l.cartList cl join cl.myPage mp join mp.member m " +
+                "where m.email = :email";
+
+        List<Lecture> lectureList = em.createQuery(query, Lecture.class)
+                .setParameter("email", authentication())
+                .getResultList();
+
+        List<LectureDto> lectureDtos = lectureList.stream().map(l ->
+                new LectureDto(l.getLecture_id(), l.getWriter(), l.getTitle(), l.getPrice(), l.isDiscounted(), l.getThumb_path())).collect(Collectors.toList());
+
+        return new DtoWrapper(lectureDtos);
+    }
+
+    @Override
+    public DtoWrapper getWishList() {
+        String query = "select l from Lecture l join l.wishList cl join cl.myPage mp join mp.member m " +
+                "where m.email = :email";
+
+        List<Lecture> lectureList = em.createQuery(query, Lecture.class)
+                .setParameter("email", authentication())
+                .getResultList();
+
+        List<LectureDto> lectureDtos = lectureList.stream().map(l ->
+                new LectureDto(l.getLecture_id(), l.getWriter(), l.getTitle(), l.getPrice(), l.isDiscounted(), l.getThumb_path())).collect(Collectors.toList());
+
+        return new DtoWrapper(lectureDtos);
+    }
 
     //   심각하게 잘못된 쿼리
     @Transactional(readOnly = true)
