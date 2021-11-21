@@ -41,7 +41,7 @@ import QnABoardModifyPage from '@/views/board/qna/QnABoardModifyPage.vue'
 // 1:1 문의 게시판
 import InqBoardRegisterPage from '@/views/board/inq/InqBoardRegisterPage.vue'
 import InqBoardListPage from '@/views/board/inq/InqBoardListPage.vue'
-import InqBoardListForUserPage from '@/views/board/inq/InqBoardListForUserPage.vue'
+// import InqBoardListForUserPage from '@/views/board/inq/InqBoardListForUserPage.vue'
 import InqBoardReadPage from '@/views/board/inq/InqBoardReadPage.vue'
 import InqBoardModifyPage from '@/views/board/inq/InqBoardModifyPage.vue'
 
@@ -72,10 +72,6 @@ export default new VueRouter({
       }, {
           path: '/memberRegister',
           component: () => import ('../views/MemberRegisterPage.vue')
-      }, {
-          path: '/memberProfile',
-          name: 'memberProfile',
-          component: () => import ('../views/MemberProfilePage.vue')
       },
       // 강의 관리 페이지 (강의 등록 시스템)
       {
@@ -109,7 +105,14 @@ export default new VueRouter({
      //강의 상세 페이지
      {
         path: '/course/:lectureId',
+        name: 'LectureDetailPage',
         component: () => import ('../views/lecture_detail/LectureDetailPage.vue'),
+     },
+     //강의 영상 재생 페이지
+     {
+       path: '/lecture/:videoId/:lectureId',
+       component: () => import ('../views/lecture_detail/play/LectureVideoPlayPage.vue'),
+       props: true
      },
       // 회원 탈퇴
       {
@@ -163,6 +166,14 @@ export default new VueRouter({
             {
               path: '/myPostList',
               component: () => import("../components/mypage/MyPostList.vue")
+            },
+            {
+              path: '/memberProfile',
+              component: () => import("../views/MemberProfilePage.vue")
+            },
+            {
+              path: '/inqforuser',
+              component: () => import("../views/board/inq/InqBoardListForUserPage.vue")
             }
           ]
       },
@@ -365,13 +376,6 @@ export default new VueRouter({
         name: 'InqBoardListPage',
         components: {
           default: InqBoardListPage
-        }
-      },
-      {
-        path: '/inqforuser',
-        name: 'InqBoardListForUserPage',
-        components: {
-          default: InqBoardListForUserPage
         }
       },
       {

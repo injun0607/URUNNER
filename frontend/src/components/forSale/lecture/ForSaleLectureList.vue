@@ -4,6 +4,7 @@
         <div class="sideBar hidden-sm-and-down">
             <v-card class="mx-auto0" max-width="500">
                 <v-list>
+                    <div class="title" @click="callAll(), path=''">전체 보기</div>
                     <v-list-group
                         v-for="item in items"
                         :key="item.title"
@@ -15,27 +16,57 @@
                                 <v-list-item-title v-text="item.title"></v-list-item-title>
                             </v-list-item-content>
                         </template>
-
                         <v-list-item v-for="child in item.items" :key="child.title">
                             <v-list-item-content>
-                                <v-list-item-title v-text="child.title" @click="selectCategory(child.value)"></v-list-item-title>
+                                <!-- <v-btn @click="selectCategory(child)" style="cursor:pointer">{{child.title}}</v-btn> -->
+                                <v-list-item-title class="child" v-text="child.title" @click="selectCategory(child)" style="cursor:pointer"></v-list-item-title>
                             </v-list-item-content>
                         </v-list-item>
                     </v-list-group>
                 </v-list>
             </v-card>
+            <div class="side_bar_option">
+                <div class="forCheckBox">
+                    <span style="padding-left:2px;">난이도 선택</span>
+                    <div class="ratingLineAll" @click="difValue=null">전체 선택</div>
+                    <div class="priceLine" :class="{ on : difValue=='중급 이상' }" @click="difValue='중급 이상'">중급 이상</div>
+                    <div class="priceLine" :class="{ on : difValue=='초급' }" @click="difValue='초급'">초급</div>
+                    <div class="priceLine" :class="{ on : difValue=='입문' }" @click="difValue='입문'">입문</div>
+                </div>
+                <div class="forCheckBox">
+                    <span style="padding-left:2px;">별점 선택</span>
+                        <div class="ratingLineAll" @click="ratingValue=null">전체 선택</div>
+                        <div class="ratingLine" :class="{ on : ratingValue==4 }" @click="ratingValue=4">
+                            <div><v-rating v-model="temp04" background-color="orange lighten-3" 
+                        small dense color="orange" large readonly></v-rating></div><div class="ratingLineText">4점 이상</div></div>
+                        <div class="ratingLine" :class="{ on : ratingValue==3 }" @click="ratingValue=3">
+                            <div><v-rating v-model="temp03" background-color="orange lighten-3" 
+                        small dense color="orange" large readonly></v-rating></div><div class="ratingLineText">3점 이상</div></div>
+                        <div class="ratingLine" :class="{ on : ratingValue==2 }" @click="ratingValue=2">
+                            <div><v-rating v-model="temp02" background-color="orange lighten-3" 
+                        small dense color="orange" large readonly></v-rating></div><div class="ratingLineText">2점 이상</div></div>
+                        <div class="ratingLine" :class="{ on : ratingValue==1 }" @click="ratingValue=1">
+                            <div><v-rating v-model="temp01" background-color="orange lighten-3" 
+                        small dense color="orange" large readonly></v-rating></div><div class="ratingLineText">1점 이상</div></div>
+                </div>
+                <div class="forCheckBox">
+                    <span style="padding-left:2px;">가격</span>
+                    <div class="ratingLineAll" @click="priceValue=null">전체 선택</div>
+                    <div class="priceLine" :class="{ on : priceValue==50000 }" @click="priceValue=50000">5만원 이하</div>
+                    <div class="priceLine" :class="{ on : priceValue==100000 }" @click="priceValue=100000">10만원 이하</div>
+                    <div class="priceLine" :class="{ on : priceValue==200000 }" @click="priceValue=200000">20만원 이하</div>
+                    <div class="priceLine" :class="{ on : priceValue==400000 }" @click="priceValue=400000">40만원 이하</div>
+                </div>
+            </div>
         </div>
         <!-- 본문 -->
         <div class="main_box">
-            <!-- 제목
-            <div class="mr-9 hidden-sm-and-down">
-                <div class="title_box">
-                    <h2 class="page_title">
-                        <span>강의</span></h2>
-                </div>
-            </div> -->
+            <!-- 공백(추후 배너창 이용) -->
+            <div class="temp22 hidden-sm-and-down">
+            </div>
             <!-- 검색창 + complete 분류 -->
             <v-spacer class="forLine0">
+
                 <div class="forLine0sButton">
                 </div>
                 <div class="searching_box_top">
@@ -43,7 +74,7 @@
                         <div class="searching" >
                             <span>
                                 <input type="text" placeholder="검색어를 입력해주세요" v-model="word"
-                                @keyup.enter="searching(word)">
+                                @keyup.enter="searchingWord(word)">
                             </span>
                                <v-icon class="searching_icon" @click="searching(word)">mdi-magnify</v-icon>
                         </div>
@@ -52,52 +83,56 @@
             </v-spacer>
             <!-- 분류창 -->
             <v-spacer class="forLine">
-                <h class="tag_button" @click="word = ''">ALL</h>&nbsp;&nbsp;&nbsp;
-                <h> > </h>
-                <h class="tag_button" @click="searchingTag('Java')">Java</h>&nbsp;&nbsp;&nbsp;
-                <h> > </h>
-                <h class="tag_button" @click="searchingTag('Spring')">Spring</h>&nbsp;&nbsp;&nbsp;
+                <b class="tag_button" @click="callAll(), word = '', path = '' ">ALL</b>&nbsp;&nbsp;&nbsp;
+                <b> ＞ </b>&nbsp;&nbsp;&nbsp;
+                <b class="tag_button">{{ path }}</b>
             </v-spacer>
             <!-- 리스트 -->
             <v-container class="lecture01 mr-9 hidden-sm-and-down">
                 <div v-show="!searchinOn">
                     <v-container class="lecture_box">
-                        <div v-for="mob in paginatedData2" :key="mob.boardNo" class="item">
-                            <v-card class="mx-auto">
-                                <v-img :src="`http://localhost:7777/lecture/image/${mob.thumb_path}/${mob.writer}`" height="200px"></v-img>
-                                <!-- <div class="btn-plus"><span draggable="false"><v-icon color="white">mdi-arrow-right</v-icon></span></div> -->
-                                <div class="btn-plus2"><span draggable="false"></span></div>
-                                <div class="btn-plus3"><span draggable="false"><v-icon color="#E0E0E0" @click="info()">mdi-alert-circle-outline</v-icon></span></div>
-                                <div class="btn-plus4"><span draggable="false"><v-rating
-                                    v-model="mob.rating"
-                                    background-color="orange lighten-3" small
-                                    color="orange" large readonly></v-rating></span></div>                                
-                                <v-card-title class="temp">
-                                    {{mob.title}}
-                                </v-card-title>
-                                <div class="forLine4"></div>
-                                <div class="card_text">
-                                    <div>
-                                        {{ mob.writer }} |
-                                    </div>
-                                    <div></div><div></div><div></div>
-                                    <div>
-                                        {{ mob.grade }}
-                                    </div>
+                        <div v-for="mob in paginatedData2" :key="mob[6]" class="item">
+                            <div class="lecture_card">
+                                <div class="card_img" @click="goPage(mob[6])">
+                                    <v-img :src="`http://localhost:7777/lecture/image/${mob[4]}/${mob[5]}`" height="200px" width="300px"></v-img>
                                 </div>
-                                <div class="card_text2">
-                                    <div>
-                                        ￦{{ mob.price }}
+                                <!-- description
+                                <div class="cardhover">
+                                    {{ mob[6] }}
+                                </div> -->
+                                <div class="btn-plus"><span draggable="false"><v-icon color="white"  @click="toggleCartBtn(mob[6])">mdi-cart</v-icon></span></div>
+                                <b @click="goPage(mob[6])">    
+                                    <!-- title -->
+                                    <div class="card_text01">
+                                        {{ mob[0] }}
                                     </div>
-                                </div>
-
-                                <div class="forLine4"></div>
-                                <v-card-actions>
-                                </v-card-actions>
-                            </v-card>
+                                    <!-- nickname -->
+                                    <div class="card_text02">
+                                        {{ mob[3] }}
+                                    </div>
+                                    <div class="card_text_gropu01">
+                                        <!-- rating -->
+                                        <div class="card_text03">
+                                            <v-rating
+                                            v-model="mob.rating"
+                                            background-color="orange lighten-3" small dense
+                                            color="orange" large readonly></v-rating>
+                                        </div>
+                                        <!-- grade -->
+                                        <div class="card_text04">
+                                            {{ mob[2] }}
+                                        </div>
+                                    </div>
+                                    <div class="forLine4"></div>
+                                    <!-- price -->
+                                    <div class="card_text05">
+                                        {{ mob[1]  | comma }}원
+                                    </div>
+                                </b>
+                            </div>
                         </div>
                         <v-container style="margin-top:20px;">
-                        <div class="text-center">
+                        <div>
                             <v-pagination class="btn_pagination" v-model="pageNum2" :length="pageCount2"></v-pagination>
                         </div>
                         </v-container>
@@ -108,43 +143,45 @@
             <v-container class="lecture01 mr-9 hidden-md-and-up">
                 <div v-show="!searchinOn">
                     <v-container class="lecture_box">
-                        <div v-for="mob in paginatedData2" :key="mob.boardNo" class="item_m">
-                            <v-card class="mx-auto">
-                                <v-img :src="ImgRequest(mob.boardNo)" height="200px"></v-img>
-                                <div class="btn-plus_m"><span draggable="false"><v-icon color="white">mdi-arrow-right</v-icon></span></div>
-                                <div class="btn-plus2_m"><span draggable="false"></span></div>
-                                <div class="btn-plus3_m"><span draggable="false"><v-icon color="#E0E0E0" @click="info()">mdi-alert-circle-outline</v-icon></span></div>
-                                <div class="btn-plus4_m"><span draggable="false"><v-rating
-                                    v-model="rating"
-                                    background-color="orange lighten-3" small
-                                    color="orange" large readonly></v-rating></span></div>
-                                
-                                <v-card-title class="temp">
-                                    {{mob.title}}
-                                </v-card-title>
-                                <v-card-title class="temp2">
-                                    <v-progress-linear
-                                        v-model="valueDeterminate" color="indigo darken-2"></v-progress-linear>
-                                </v-card-title>
-                                <div class="card_text">
-                                    <div>
-                                        전체 진도율 : 15% |
+                        <div v-for="mob in paginatedData2" :key="mob.boardNo">
+                            <div class="mx-auto2" @click="goPage(mob[6])">
+                                <div class="card_img" @click="goPage(mob[6])">
+                                    <v-img :src="`http://localhost:7777/lecture/image/${mob[4]}/${mob[5]}`" height="150px" width="150px"></v-img>
+                                </div>
+                                <div class="card_info">                                    
+                                    <div style="height:66px;"><!-- title -->
+                                        {{mob[0]}}
                                     </div>
-                                    <div></div><div></div><div></div>
-                                    <div>
-                                        {{ mob.grade }} | {{ mob.nickname }}
+                                    <div class="forLine4"></div>
+                                    <div class="card_text">
+                                        <div class="nickname_txt">
+                                            <!-- nickname -->
+                                            {{ mob[3] }}
+                                        </div>
+                                        <div></div><div></div>
+                                        <div v-show="path != ''" class="category_txt">
+                                            {{ path }}
+                                        </div>
+                                        <div class="grade_txt">
+                                            <!-- grade -->
+                                            {{ mob[2] }}
+                                        </div>
+                                    </div>
+                                    <div class="card_text2">
+                                        <div>
+                                            <!-- price -->
+                                            ￦{{ mob[1]  | comma }}
+                                        </div>
                                     </div>
                                 </div>
-                                <v-card-actions>
-                                </v-card-actions>
-                            </v-card>
+                            </div>
                         </div>
-                        <v-container style="margin-top:20px;">
-                        <div class="text-center">
-                            <v-pagination class="btn_pagination" v-model="pageNum2" :length="pageCount2"></v-pagination>
-                        </div>
-                        </v-container>
                     </v-container>
+                    <div style="margin-top:20px;">
+                    <div class="text-center">
+                        <v-pagination class="btn_pagination" v-model="pageNum2" :length="pageCount2"></v-pagination>
+                    </div>
+                    </div>
                 </div>
             </v-container>
         </div>
@@ -153,6 +190,7 @@
 <script>
 
 import { mapState, mapActions } from 'vuex'
+import axios from 'axios';
 
 export default {
     name: 'ForSaleLectureList',
@@ -174,67 +212,80 @@ export default {
             // 인공지능', '딥러닝', '데이터베이스', 'SQL', 'MongoDB', '보안', '모바일 앱 개발', 'Swift', '안드로이드', 'Kotlin', '코딩테스트', '기타'
                 items: [
                     {
-                        title: '4번 카테고리', value: 4
-                    }
-                ],
-                title: '개발 프로그래밍'
-            }, {
-                items: [
-                    {
-                        title: '14번 카테고리', value: 14
+                        title: 'JAVA', value: 1
                     }, {
-                        title: '2번 카테고리', value: 2
+                        title: '개발 프로그래밍', value: 2
                     }, {
-                        title: '1번 카테고리', value: 1
+                        title: '프론트엔드', value: 3
+                    }, {
+                        title: '백엔드', value: 3
+                    }, {
+                        title: 'Vue', value: 4
+                    }, {
+                        title: 'React', value: 5
+                    }, {
+                        title: 'Html Css', value: 6
+                    }, {
+                        title: 'JavaScript Css', value: 9
+                    }, {
+                        title: '게임 개발', value: 10
+                    }, {
+                        title: 'Golang', value: 11
+                    }, {
+                        title: 'Python', value: 13
+                    }, {
+                        title: 'Golang', value: 11
+                    }, {
+                        title: 'Golang', value: 11
                     }
                 ],
-                title: '게임 개발'
+                title: '프로그래밍'
             }, {
                 items: [
                     {
-                        title: 'List Item'
-                    }
-                ],
-                title: '프론트엔드'
-            }, {
-                items: [
-                    {
-                        title: 'List Item'
+                        title: '보안', value: 19
                     }
                 ],
                 title: '보안'
             }, {
                 items: [
                     {
-                        title: 'List Item'
+                        title: '인공지능', value: 14
+                    }, {
+                        title: '딥러닝', value: 15
                     }
                 ],
-                title: '딥러닝'
+                title: '머신러닝'
             }, {
                 items: [
                     {
-                        title: 'List Item'
-                    }
-                ],
-                title: '인공지능'
-            }, {
-                items: [
-                    {
-                        title: 'List Item'
+                        title: '데이터베이스', value: 16
+                    }, {
+                        title: 'SQL', value: 17
+                    }, {
+                        title: 'MongoDB', value: 18
                     }
                 ],
                 title: '데이터베이스'
             }, {
                 items: [
                     {
-                        title: 'List Item'
+                        title: '모바일 앱 개발', value: 20
+                    }, {
+                        title: 'Swift', value: 21
+                    }, {
+                        title: '안드로이드', value: 22
+                    }, {
+                        title: 'Kotlin', value: 23
                     }
                 ],
-                title: '코딩테스트'
+                title: '모바일'
             }, {
                 items: [
                     {
-                        title: 'List Item'
+                        title: '코딩테스트', value: 24
+                    }, {
+                        title: '기타', value: 25
                     }
                 ],
                 title: '기타'
@@ -253,8 +304,24 @@ export default {
         headers: [
         ],
         valueDeterminate: 15,
-        rating: 5
+        rating: 5,
+        path: '',
+        cart: null,
+        difValue: null,
+        priceValue: null,
+        ratingValue: 0,
+        temp04: 4,
+        temp03: 3,
+        temp02: 2,
+        temp01: 1,
+        copiedList: [],
+        refreshCheck: 1
     }),
+    created () {
+        setTimeout(() => {
+            this.copiedList = this.callLecturelist
+            }, 1000)
+    },
     watch: {
         word(newVal) {
             if(newVal == '') {
@@ -262,6 +329,13 @@ export default {
                     this.searchinOn = false
                     }, 200)
             }
+        },
+        difValue() {
+            this.sideBarFilter()
+        },
+        priceValue() {
+            console.log('watchedStep:) this.priceValue : ' + this.priceValue)
+            this.sideBarFilter()
         }
     },
     methods: {
@@ -306,14 +380,105 @@ export default {
             alert('강의 소개 페이지로 링크')
         },
         selectCategory(data) {
-            this.fetchCallLectureListWithCategory(data)
+            this.fetchCallLectureListWithCategory(data.value)
+            .then(() => {
+                this.copiedList = this.callLecturelist
+                })
+            this.path = data.title
         },
-        ...mapActions(['fetchCallLectureListWithCategory'])
+        callAll() {
+            this.$emit("callAll", {})
+        },
+        searchingWord(data) {
+            this.fetchCallLectureListWithFilter(data)
+            this.path = ''            
+        },
+        goPage(data) {
+            this.$router.push( { name: 'LectureDetailPage', params: { lectureId: data.toString() } } )
+        },
+        toggleCartBtn(data) {
+        axios.get(`http://localhost:7777/manageLecture/addToCart/${data}`)
+                .then(({ data }) => {
+                this.cart = data
+                if (data == true) {
+                    alert('장바구니에 담겼습니다.')
+                } else {
+                    alert('장바구니에서 제외됐습니다.')
+                }
+                })
+        },
+        sideBarFilter() {
+            console.log('변동감지')
+            '일단 각 변수값 체크하고 굴리자 null이면 ㄴ 값이 있으면 ㄱ'
+            // 초기화
+            var tempLists = this.copiedList            
+            var searchingResult = []
+            var searchingResult2 = []
+
+            if(this.difValue !== null) {
+                for(var i = 0; i < tempLists.length; i++){                    
+                    const regex = new RegExp(this.difValue, "gi");
+                    const comparison = regex.test(tempLists[i][2])
+                    if(comparison){
+                        searchingResult.push(tempLists[i])
+                    }
+                }
+            } else if (this.difValue == null) {
+                console.log('this.difValue == null')
+                searchingResult = tempLists
+            }
+
+
+            if(this.priceValue !== null) {
+                console.log('searchingResult.length : ' + searchingResult.length)
+                for(var j = 0; j < searchingResult.length; j++){
+                    if(searchingResult[j][1] < this.priceValue) {
+                        console.log('true')
+                        console.log('searchingResult[j][2] : ' + searchingResult[j][1])
+                        console.log(' <= ')
+                        console.log('this.priceValue : ' + this.priceValue)
+                        searchingResult2.push(searchingResult[j])
+                    }
+                }
+            } else if (this.priceValue == null) {
+                console.log('this.priceValue == null')
+                searchingResult2 = searchingResult
+            }
+
+            // if(this.priceValue == null && this.difValue == null) {
+            //     searchingResult2 = tempLists
+            // }
+            // if(this.priceValue !== null) {
+            //     for(var j = 0; j < tempLists.length; j++){                    
+            //         const regex = new RegExp(this.priceValue, "gi");
+            //         const comparison = regex.test(tempLists[j][1])
+            //         if(comparison){
+            //             searchingResult.push(tempLists[j])
+            //         }
+            //     }
+            // }
+            // if(this.ratingValue !== null) {
+            //     for(var k = 0; k < tempLists.length; k++){                    
+            //         const regex = new RegExp(this.ratingValue, "gi");
+            //         const comparison = regex.test(tempLists[k][7])
+            //         if(comparison){
+            //             searchingResult.push(tempLists[k])
+            //         }
+            //     }
+            // }
+
+            this.callLecturelist = searchingResult2
+            console.log('태그 결과')
+            console.log(this.callLecturelist)
+            this.refreshCheck = 2
+        },
+        ...mapActions(['fetchCallLectureListWithCategory']),
+        ...mapActions(['fetchCallLectureListWithFilter'])
         
     },
     computed: {
         pageCount2() {
-            let listLength = this.$store.state.callLecturelist.length, // 길이
+            let listLength = this.callLecturelist.length, // 길이
                 listSize = this.pageSize2,
                 page = Math.floor(listLength / listSize);
             if (listLength % listSize > 0) 
@@ -321,14 +486,16 @@ export default {
                 return page;
         },
         paginatedData2() {
-            // const start = (this.pageNum2 - 1) * this.pageSize2,
-            //     end = start + this.pageSize2;
-            console.log(this.$store.state.callLecturelist)
-            return this.$store.state.callLecturelist.slice(0, 10);
+            return this.callLecturelist.slice(0, 10);
         },
         ...mapState ({
         lists: state => state.lists
         })
+    },
+    filters : {
+        comma(val){
+            return String(val).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
     }
 }
     
@@ -340,14 +507,103 @@ export default {
     justify-content: start;
 }
 .sideBar {
-    margin: 30px 30px 0px 10vw;
+    margin: 60px 60px 0px 10vw;
+    cursor: pointer;
 }
 .mx-auto0.v-card.v-sheet.theme--light {
-    width: 230px;
+    width: 200px;
 }
+
+
+/* 사이드바 차일드 박스 */
 .v-list-item.theme--light {
     padding-left:30px!important;
+    border-top: 1px solid #EEEEEE;
+    background-color: white;
+    font-weight: 500;
 }
+.v-list-item.theme--light:hover {
+    background-color: #FAFAFA;
+}
+.v-list-group.v-list-group--no-action {
+    background-color: #f8f8f8 !important;
+}
+
+
+/* 사이드바 옵션 박스*/
+.side_bar_option {
+    font-size: 14px;
+    font-weight: bold;
+    border-top: 1px solid #BDBDBD;
+}
+.forCheckBox {
+    display: flex;
+    justify-content: start;
+    flex-direction: column;
+    border-bottom: 1px solid #BDBDBD;
+    padding: 15px 5px;
+}
+.v-input.v-input--hide-details.theme--light.v-input--selection-controls.v-input--checkbox {
+    margin: 0px;
+}
+.v-input.v-input--hide-details.theme--light.v-input--selection-controls.v-input--checkbox:hover {
+    background-color: #f8f8f8 !important;
+}
+.ratingLineAll {
+    display:flex;
+    justify-content: start;
+    font-size: 12px;
+    font-weight: bold;
+    padding-left: 3px;
+    margin-top: 5px;
+}
+.ratingLine {
+    display:flex;
+    justify-content: start;
+    font-size: 12px;
+    font-weight: 500;    
+}
+.ratingLine:hover {
+    background-color: #f8f8f8 !important;
+}
+.ratingLine.on {
+    background-color: #f8f8f8 !important;
+    font-weight: bold;
+    font-size: 12px;
+    color: #01579B;
+}
+.ratingLineText {
+    padding-top: 2px;
+    margin-left: 3px;
+}
+.priceLine:hover {
+    background-color: #f8f8f8 !important;
+}
+.priceLine.on {
+    background-color: #f8f8f8 !important;
+    font-weight: bold;
+    font-size: 13px;
+    color: #01579B;
+}
+.priceLine {
+    display:flex;
+    justify-content: start;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 1px;
+    margin-left:2px;   
+}
+.priceLine:hover {
+    background-color: #f8f8f8 !important;
+}
+.priceLine.on {
+    background-color: #f8f8f8 !important;
+    font-weight: bold;
+    font-size: 13px;
+    color: #01579B;
+}
+
+
 
 
 .mx-auto:hover {
@@ -475,36 +731,6 @@ p {
   opacity:1;
   transform:scale(1);
 }
-.mx-auto:hover .btn-plus2 {
-  opacity:1;
-  transform:scale(1);
-}
-.mx-auto:hover .btn-plus3 {
-  opacity:1;
-  transform:scale(1);
-}
-.mx-auto:hover .btn-plus4 {
-  opacity:1;
-  transform:scale(1);
-}
-.mx-auto:hover .btn-plus_m {
-  opacity:1;
-  transform:scale(1);
-}
-.mx-auto:hover .btn-plus2_m {
-  opacity:1;
-  transform:scale(1);
-}
-.mx-auto:hover .btn-plus3_m {
-  opacity:1;
-  transform:scale(1);
-}
-.mx-auto:hover .btn-plus4_m {
-  opacity:1;
-  transform:scale(1);
-}
-
-
 .btn_pagination {
     background-color: transparent;
     box-shadow: none;
@@ -517,7 +743,7 @@ p {
 }
 .item {
     margin: 10px;
-    width: 250px;
+    width: 270px;
     cursor: pointer;
 }
 .item_m {
@@ -525,176 +751,12 @@ p {
     width: 200px;
     cursor: pointer;
 }
-.btn-plus {
-  position:absolute;
-  top:77.5px;
-  left:102.5px;
-  background:rgb(65, 84, 192, 0.8);
-  width:55px;
-  height:55px;
-  border-radius:50%;
-  text-align:center;
-  /* 추가된 부분 */
-  opacity:0;
-  transform:scale(2);
-  transition:all .3s linear;
-}
-.btn-plus span {
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-.btn-plus2 {
-  /* hover시 사진 어둡게 */
-  position:absolute;
-  top:0.001px;
-  background:rgba(0, 0, 0, 0.5);
-  width:250px;
-  height:200px;
-  text-align:center;
-  border-radius: 6px 6px 0px 0px;
-  cursor: pointer;
-  /* 추가된 부분 */
-  opacity:0;
-  transition:all .6s linear;
-}.btn-plus2 span {
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-.btn-plus2_m {
-  /* hover시 사진 어둡게 */
-  position:absolute;
-  top:0.001px;
-  background:rgba(0, 0, 0, 0.2);
-  width:250px;
-  height:200px;
-  text-align:center;
-  border-radius: 6px 6px 0px 0px;
-  cursor: pointer;
-  /* 추가된 부분 */
-  opacity:0;
-  transition:all .6s linear;
-}.btn-plus2_m span {
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-.btn-plus3 {
-  /* hover시 사진 어둡게 */
-  position:absolute;
-  top:155px;
-  width:470px;
-  height:400px;
-  text-align:center;
-  border-radius: 6px 6px 0px 0px;
-  cursor: pointer;
-  /* 추가된 부분 */
-  opacity:0;
-  transition:all .6s linear;
-}.btn-plus3 span {
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-.btn-plus4 {
-  /* hover시 사진 어둡게 */
-  position:absolute;
-  top:155px;
-  width:160px;
-  height:400px;
-  text-align:center;
-  border-radius: 6px 6px 0px 0px;
-  cursor: pointer;
-  /* 추가된 부분 */
-  opacity:0;
-  transition:all .6s linear;
-}.btn-plus4 span {
-  width: 10px;
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-.btn-plus_m {
-  position:absolute;
-  top:77.5px;
-  left:77.5px;
-  background:rgb(65, 84, 192, 0.8);
-  width:55px;
-  height:55px;
-  border-radius:50%;
-  text-align:center;
-  /* 추가된 부분 */
-  opacity:0;
-  transform:scale(2);
-  transition:all .3s linear;
-}
-.btn-plus_m span {
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-.btn-plus2_m {
-  /* hover시 사진 어둡게 */
-  position:absolute;
-  top:0.001px;
-  background:rgba(0, 0, 0, 0.5);
-  width:200px;
-  height:200px;
-  text-align:center;
-  border-radius: 6px 6px 0px 0px;
-  cursor: pointer;
-  /* 추가된 부분 */
-  opacity:0;
-  transition:all .6s linear;
-}.btn-plus2_m span {
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-.btn-plus3_m {
-  /* hover시 사진 어둡게 */
-  position:absolute;
-  top:155px;
-  width:370px;
-  height:400px;
-  text-align:center;
-  border-radius: 6px 6px 0px 0px;
-  cursor: pointer;
-  /* 추가된 부분 */
-  opacity:0;
-  transition:all .6s linear;
-}.btn-plus3_m span {
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-.btn-plus4_m {
-  /* hover시 사진 어둡게 */
-  position:absolute;
-  top:155px;
-  width:160px;
-  height:400px;
-  text-align:center;
-  border-radius: 6px 6px 0px 0px;
-  cursor: pointer;
-  /* 추가된 부분 */
-  opacity:0;
-  transition:all .6s linear;
-}.btn-plus4_m span {
-  width: 10px;
-  font-size:2.3em;
-  color:#ffffff;
-  user-select:none;
-}
-
-
 .tag_button {
-    color: #BDBDBD;
+    color: black;
     cursor: pointer;
 }
 .tag_button.on {
-    color: black;
+    color: #F9A825;
 }
 .tag_button.on2 {
     color: rgb(53, 53, 53);
@@ -703,13 +765,13 @@ p {
 .tag_button:hover {
     color: rgb(63, 63, 63);
     cursor: pointer;
-    transition: all 0.5s ease;
+    transition: all 0.f5s ease;
 }
 .forLine0 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 40px;
+    height: 40px !important;
     padding-left: 2vw;
 }
 .forLine0sButton {
@@ -718,13 +780,14 @@ p {
     align-items: center;
 }
 .forLine {
-    height: 40px;
+    height: 40px !important;
     border-top: 1px solid #BDBDBD;
     border-bottom: 1px solid #BDBDBD;
     padding-left: 2vw;
     display: flex;
     justify-content: start;
     align-items: center;
+    margin-top: 10px;
 }
 .searching {
     display: flex;
@@ -767,27 +830,11 @@ input:focus {
     outline:none;
 }
 .main_box {
-    display: flex;
     justify-content: center;
     flex-direction: column;
     
     color: #424242;
-    margin-top: 30px;
     max-width:900px;
-}
-.temp {
-    font-size: 15px;
-    font-weight: bold;
-    color: #424242;
-    padding: 5px 10px 5px 10px;
-    height: 50px;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    line-height: 25px;
-    -webkit-line-clamp: 2; /* 표시하고자 하는 라인 수 */
-    -webkit-box-orient: vertical;
 }
 .temp2 {
     font-size: 15px;
@@ -806,7 +853,7 @@ input:focus {
 .card_text2 {
     display: flex;
     justify-content: start;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     color:black;
     margin:5px 5px 0px 5px;
@@ -815,12 +862,217 @@ input:focus {
     border-bottom:1px solid #ececec
 }
 .v-sheet.v-card:not(.v-sheet--outlined) {
-    box-shadow: 0 1px 1px -1px rgb(0 0 0 / 10%), 0 2px 2px 0 rgb(0 0 0 / 4%), 0 1px 5px 0 rgb(0 0 0 / 6%) !important;
+    box-shadow: none !important;
 
 }
-.forLine4 {    
-    margin:5px 5px 0px 5px;
+.forLine4 {
     padding-bottom:5px;
     border-bottom:1px solid #ececec
 }
+.nickname_txt {
+    margin-top: 5px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #757575;
+}
+.grade_txt {
+    margin-top: 5px;
+    background-color: #C2185B;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+    padding: 0 4px 0 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+.category_txt {
+    margin-top: 5px;
+    background-color: #F9A825;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+    padding: 0 4px 0 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+.title {
+    padding: 10px 16px !important;
+    font-size: 12px !important;
+    cursor: pointer;
+    border: 1px solid #EEEEEE;
+}
+.title:hover {
+    background-color: rgb(246, 246, 246);
+}
+.v-application .title {
+    font-size: 1rem !important;
+}
+.v-list-item__title {
+    font-size: 0.9rem;
+}
+/* 사이드바 차일드 텍스트 */
+.v-list-item__title.child {
+    font-size: 0.8rem !important;
+}
+/* 사이드바 타이틀 */
+.v-application .primary--text {
+    color: black !important;
+    font-weight: bold;
+    caret-color: #BDBDBD !important;
+}
+.v-list-group.v-list-group--no-action {
+    font-size: 5px !important;
+    border-bottom: 1px solid #EEEEEE;
+    border-left: 1px solid #EEEEEE;
+    border-right: 1px solid #EEEEEE;
+    background-color: white;
+}
+.mx-auto2 {
+    display:flex;
+    justify-content: start;
+    flex-direction: row;
+
+    width: 90vw;
+    margin: 10px 0px;
+}
+.card_info {
+    display:flex;
+    justify-content: start;
+    flex-direction: column;
+    padding: 5px 5px;
+    width: inherit;
+    font-size: 15px;
+    font-weight: bold;
+    color: #424242;
+}
+.v-list-group__items {
+    background-color: white;
+}
+
+
+
+
+
+
+.v-image.v-responsive.theme--light {
+  border-radius: 3px;
+}
+.lecture_card:hover .cardhover {
+    opacity:1;
+    transform:scale(1);
+    transition: all 0.5s ease;  
+}
+.lecture_card {
+  z-index: 0;
+  width:inherit;
+  height:inherit;
+}
+.lecture_card:hover {
+    transform: translate3d(0px, 0px, 0px);
+}
+.lecture_card:hover .btn-plus {
+  opacity:1;
+  transform:scale(1);
+  transition: all 0.5s ease;
+}
+.btn-plus {
+  position:absolute;
+  top:70px;
+  left:105px;
+  background:rgb(65, 84, 192, 0.8);
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  text-align:center;
+  /* 추가된 부분 */
+  opacity:0;
+  transform:scale(2);
+}
+.btn-plus span {
+  font-size:2.3em;
+  color:#ffffff;
+  user-select:none;
+}
+
+.cardhover {
+    position:absolute;
+    top:0px;
+    padding: 10px;
+    background:rgba(0, 0, 0, 0.5);
+    width:270px;
+    height:200px;
+    text-align:center;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+}
+.card_text01 {    
+    display:flex;
+    justify-content: start;
+    margin: 5px 0px;
+    font-size: 14px;
+    padding-left: 3px;
+    height: 44px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-height: 22px;
+    -webkit-line-clamp: 2; /* 표시하고자 하는 라인 수 */
+    -webkit-box-orient: vertical;
+}
+.card_text02 {
+    display:flex;
+    justify-content: start;
+    margin: 8px 0px 0px 0px;
+    font-size: 13px;
+    font-weight: bold;
+    padding-left: 3px;
+}
+.card_text_gropu01 {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+}
+.card_text03 {
+    display:flex;
+    justify-content: start;
+    margin: 0px 0px;
+    font-size: 14px;
+}
+.card_text04 {
+    margin-top: 5px;
+    background-color: #C2185B;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+    padding: 0 4px 0 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+.card_text05 {
+    display:flex;
+    justify-content: start;
+    margin: 0px 0px;
+    font-size: 14px;
+    font-weight: 900;
+    padding-left: 3px;
+}
+.temp22 {
+    margin-top:90px;
+}
+.text-center {
+    width: 95vw;
+}
+a { text-decoration:none !important }
+a:hover { text-decoration:none !important }
+
+
 </style>
