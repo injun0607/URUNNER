@@ -51,6 +51,8 @@ public class MemberServiceImpl implements MemberService, UserDetailsService {
     private final MyPageRepository myPageRepository;
     private final InstructorRepository instructorRepository;
 
+
+
     @Override
     public boolean registerMember(MemberRes memberRes) throws Exception {
         Member member = new Member();
@@ -68,6 +70,7 @@ public class MemberServiceImpl implements MemberService, UserDetailsService {
             //받은요청(MemberRes) Entity(Member)전환 코드
             member.setEmail(memberRes.getEmail());
             member.setNickname(memberRes.getNickname());
+            member.setName(memberRes.getNickname());
             member.setPassword(passwordEncoder.encode(memberRes.getPassword()));
             member.setProvider(AuthProvider.local);
             role.setName("ROLE_USER");
@@ -111,8 +114,10 @@ public class MemberServiceImpl implements MemberService, UserDetailsService {
     }
 
     @Override
-    public void sendMail(String email) throws Exception {
-        MailUtils.sendMail(email);
+    public void sendMail(String email,String certCode) throws Exception {
+
+        MailUtils.sendMail(email,certCode);
+
     }
   
     // 비밀번호 변경 (유저 찾기)

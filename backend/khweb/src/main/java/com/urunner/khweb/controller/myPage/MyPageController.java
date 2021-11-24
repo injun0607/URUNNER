@@ -1,11 +1,11 @@
 package com.urunner.khweb.controller.myPage;
-
-
+import com.urunner.khweb.controller.dto.mypage.CheckCodeDto;
 import com.urunner.khweb.controller.dto.mypage.MyPageRes;
 import com.urunner.khweb.entity.mypage.MyNote;
 import com.urunner.khweb.entity.mypage.TempLecture;
 import com.urunner.khweb.service.member.MemberService;
 import com.urunner.khweb.service.mypage.MypageService;
+import com.urunner.khweb.utility.MailUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,12 +14,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Slf4j
 @Controller
 @RequestMapping("/my-page")
 public class MyPageController {
+
+    private String certCode;
 
     @Autowired
     private MypageService mypageService;
@@ -51,12 +55,33 @@ public class MyPageController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
+        certCode = MailUtils.mailCertNumber().toString();
+
 
         log.info(email);
-        memberService.sendMail(email);
+        memberService.sendMail(email,certCode);
         log.info("mailsend Success!");
 
         return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
+    @PostMapping("/mailcert")
+    public ResponseEntity<String> checkCertCode(@RequestBody CheckCodeDto checkCode)throws Exception{
+        log.info("mailcheck() certCode: "+ certCode);
+        log.info("checkCode : "+checkCode.getCheckCode());
+
+        //인증확인코드
+        if(certCode.equals(checkCode.getCheckCode())){
+            //성공시 로직
+            log.info("인증성공!");
+
+            return new ResponseEntity<>("success",HttpStatus.OK);
+        }
+        else{
+            //인증실패시 로직
+            log.info("인증실패!");
+            return new ResponseEntity<>("fail",HttpStatus.OK);
+        }
     }
 
     @GetMapping("/getPoint")
