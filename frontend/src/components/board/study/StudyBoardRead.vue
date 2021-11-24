@@ -69,7 +69,8 @@ export default {
             introduce: 'HELLO WORLD!',
             refresh: 1,
             members: this.$store.state.studyMembers,
-            complete: false
+            complete: false,
+            copiedBoard: null
         }
     },
     props: {
@@ -80,8 +81,8 @@ export default {
     },
     methods : {
         appl(data) {
-            this.nickname = this.$store.state.moduleA.nickname
-            this.email = this.$store.state.moduleA.email
+            this.nickname = Vue.$cookies.get("NICKNAME")
+            this.email = Vue.$cookies.get("USER_NAME")
             const { nickname, email, introduce } = this
             axios.put(`http://localhost:7777/studyboard/apply/${data}`, { nickname, email, introduce })
                     .then(res => {
@@ -97,12 +98,9 @@ export default {
         },
         endRecruit(data) {
             console.log('endRecruit에서 날아온 data(boardNo)값은 : ' + data)
-            if(this.board.complete) {
-                this.board.complete = false
-            } else {
-                this.board.complete = true
-            }
-            const { title, content, fit, complete, currentNum, notice} = this.board
+            this.copiedBoard = this.board
+            this.copiedBoard.complete = !this.board.complete
+            const { title, content, fit, complete, currentNum, notice} = this.copiedBoard
             axios.put(`http://localhost:7777/studyboard/${data}`, { title, content, fit, complete, currentNum, notice })
                     .then(res => {
                         console.log(res)
@@ -136,37 +134,6 @@ export default {
 .main_box {
     color: #424242;
 }
-.title_box {   
-}
-.title_box span {
-    font-size: 25px;
-    font-weight: bold;
-}
-.page_title {
-}
-.option_box {
-    display: flex;
-    justify-content: flex-end;
-    width: 70vw;    
-    max-width: 1000px;
-}
-.searching_box {    
-    height: 50px;
-}
-.searching_bar {
-    display: flex;
-    justify-content: row;
-    height: 40px;
-    width:70vw;
-    max-width: 1000px;
-    border: 1px solid #BDBDBD;
-}
-.searching {
-    height: 38px !important; 
-    width:60vw !important;
-    max-width: 955px;
-    border-style: none !important;
-}
 .searching_message_box {
     width:95vw;
     max-width: 1000px;
@@ -177,7 +144,7 @@ export default {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width:100vw;
+    width:78vw;
     max-width: 900px;
     border-top: 1px solid #BDBDBD;
     border-bottom: 1px solid #BDBDBD;
@@ -195,7 +162,6 @@ export default {
 .searching_message p {    
     font-size: 13px;
     color: #757575;
-
 }
 
 

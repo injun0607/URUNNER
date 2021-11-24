@@ -139,7 +139,7 @@ export default {
     },
     created() {
         this.nickname= Vue.$cookies.get("NICKNAME"),
-        this.userId= this.$store.state.moduleA.email,
+        this.userId= Vue.$cookies.get("USER_NAME"),
         this.userIdInToken= Vue.$cookies.get("USER_NAME")
         this.introduce = this.$store.state.profile.introduce
     },
@@ -151,7 +151,7 @@ export default {
         return {
             name: '',
             nickname: Vue.$cookies.get("NICKNAME"),
-            userId: this.$store.state.moduleA.email,
+            userId: Vue.$cookies.get("USER_NAME"),
             userIdInToken: Vue.$cookies.get("USER_NAME"),
             password: '',
             introduce: '',
@@ -281,6 +281,7 @@ export default {
                 this.fetchMyIntroduce(this.userIdInToken)
                 this.$router.push('/memberProfile')
                 alert('프로필 사진 변경 완료')
+                this.$router.go(this.$router.currentRoute)
             })
             .catch(err => {
             alert(err);
