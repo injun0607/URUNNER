@@ -1,8 +1,10 @@
 package com.urunner.khweb.controller.myPage;
 import com.urunner.khweb.controller.dto.mypage.CheckCodeDto;
 import com.urunner.khweb.controller.dto.mypage.MyPageRes;
+import com.urunner.khweb.entity.member.Member;
 import com.urunner.khweb.entity.mypage.MyNote;
 import com.urunner.khweb.entity.mypage.TempLecture;
+import com.urunner.khweb.repository.member.MemberRepository;
 import com.urunner.khweb.service.member.MemberService;
 import com.urunner.khweb.service.mypage.MypageService;
 import com.urunner.khweb.utility.MailUtils;
@@ -24,6 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class MyPageController {
 
     private String certCode;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Autowired
     private MypageService mypageService;
@@ -70,11 +75,17 @@ public class MyPageController {
         log.info("mailcheck() certCode: "+ certCode);
         log.info("checkCode : "+checkCode.getCheckCode());
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = memberRepository.findByEmail(authentication.getName());
+        log.info("현재멤버는 : "+ member.getEmail());
+
+
         //인증확인코드
         if(certCode.equals(checkCode.getCheckCode())){
             //성공시 로직
             log.info("인증성공!");
-
+            member.setCert(true);
+            memberRepository.save(member);
             return new ResponseEntity<>("success",HttpStatus.OK);
         }
         else{
