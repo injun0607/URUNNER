@@ -1,6 +1,7 @@
 package com.urunner.khweb.service.board;
 
 import com.urunner.khweb.entity.lecture.Lecture;
+import com.urunner.khweb.entity.lecture.LectureList;
 import com.urunner.khweb.entity.lecture.LectureVideo;
 import com.urunner.khweb.repository.board.CallLectureRepository;
 import com.urunner.khweb.repository.lecture.LectureRepository;
@@ -42,11 +43,15 @@ public class CallLectureServiceImpl implements CallLectureService {
     }
 
     @Override
-    public Lecture callLatestLecture(Long videoId) throws Exception {
+    public Optional<Lecture> callLatestLecture(Long videoId) throws Exception {
         //렉쳐비디오
         Optional<LectureVideo> latestLectureVideo = lectureVideoRepository.findById(videoId);
         //렉쳐반환
-        Lecture lecture = latestLectureVideo.get().getLectureList().getLecture();
+        log.info("렉쳐리스트 탐색시작");
+        LectureList tmpLectureList = latestLectureVideo.get().getLectureList();
+        log.info("렉쳐리스트는: "+ tmpLectureList.getLectureList_id());
+        log.info("렉쳐 탐색시작");
+        Optional<Lecture> lecture = lectureRepository.findById(tmpLectureList.getLectureList_id());
 
         return lecture;
 

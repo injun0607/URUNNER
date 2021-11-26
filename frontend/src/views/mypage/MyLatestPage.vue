@@ -18,9 +18,11 @@ export default {
   },
   computed: {
     ...mapState(['callLatestLecture'])
+
   },
   mounted () {
-    this.fetchMyLectureList()
+    this.fetchMyLatestLectureList()
+
   },
   methods: {
     ...mapActions(['fetchMyLatestLectureList'])

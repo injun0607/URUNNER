@@ -49,7 +49,8 @@ public class MyLectureController {
         log.info(authentication.getName());
         Member member = memberRepository.findByEmail(authentication.getName());
         Long latestVideoId = member.getLatestVideoId();
-        Lecture latestLecture= service.callLatestLecture(latestVideoId);
+        Lecture latestLecture= service.callLatestLecture(latestVideoId).get();
+
         log.info("latest Lecture: "+ latestLecture.getTitle());
 
         return new ResponseEntity<>(latestLecture,HttpStatus.OK);

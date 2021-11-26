@@ -11,6 +11,6 @@ public interface CallLectureService {
     List<Object[]> selectLectureListWithTag(Long categoryId) throws Exception;
     List<Object[]> selectLectureListWithWord(String word) throws Exception;
     List<Object[]> selectMyLectureList(Long memberNO) throws Exception;
-    Lecture callLatestLecture(Long videoId) throws Exception;
+    Optional<Lecture> callLatestLecture(Long videoId) throws Exception;
 
 }
