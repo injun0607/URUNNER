@@ -3,6 +3,8 @@ package com.urunner.khweb.controller.lecture;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.urunner.khweb.controller.dto.lecture.*;
+import com.urunner.khweb.entity.member.Member;
+import com.urunner.khweb.repository.member.MemberRepository;
 import com.urunner.khweb.service.lecture.LectureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,9 @@ public class LectureController {
 
     @Value("${video.location}")
     private String videoLocation;
+
+    @Autowired
+    MemberRepository memberRepository;
 
     @Autowired
     private LectureService lectureService;
@@ -391,9 +396,25 @@ public class LectureController {
     public ResponseEntity<ResourceRegion> getVideo(@PathVariable Long lectureId,
                                                    @RequestHeader HttpHeaders headers) throws IOException {
 
+        log.info("lectureId: "+ lectureId);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("현재유저 : "  +authentication.getName());
+
+        Member member = memberRepository.findByEmail(authentication.getName());
+
+        log.info("현재아이디 : "+authentication.getName());
+
+        member.setLatestVideoId(lectureId);
+        memberRepository.save(member);
+
+        log.info("member videoId:" + member.getLatestVideoId());
+
         Optional<LectureVideoInfo> videoInfo = lectureService.getVideoInfo(lectureId);
 
+
         log.info("getVideo");
+
 
         UrlResource video = new UrlResource("classpath:" + videoLocation + "/" + videoInfo.get().getWriter() + "/" + videoInfo.get().getPath());
         ResourceRegion region = resourceRegion(video, headers);

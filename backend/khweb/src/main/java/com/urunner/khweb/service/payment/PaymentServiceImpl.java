@@ -56,7 +56,7 @@ public class PaymentServiceImpl implements PaymentService{
         String paymentKey = paymentDto.getPaymentKey();
         String orderId = paymentDto.getOrderId();
         int amount = paymentDto.getAmount();
-
+        long point = member.getMyPage().getPoint() + (long)(amount*0.05);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString((SECRET_KEY + ":").getBytes()));
@@ -86,6 +86,7 @@ public class PaymentServiceImpl implements PaymentService{
                 Lecture lecture = lectureRepository.findByTitle(title);
                 Long lecture_id = lecture.getLecture_id();
                 //
+
                 log.info(title);
                 log.info("memberNo:"+member.getMemberNo());
                 if(lecture != null ){
@@ -94,6 +95,7 @@ public class PaymentServiceImpl implements PaymentService{
                     purchasedLecture.setLecture_id(lecture_id);
                     purchasedLecture.setOrederId(orderId);
                     member.addPurchasedLecture(purchasedLecture);
+                    member.getMyPage().setPoint(point);
                     log.info("멤버 저장합니다");
                     memberRepository.save(member);
                     //마이페이지 구매강의 접근시 purchasedLectureRepository.getTitle() 로 강의

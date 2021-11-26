@@ -173,7 +173,12 @@ export default new VueRouter({
             {
               path: '/inqforuser',
               component: () => import("../views/board/inq/InqBoardListForUserPage.vue")
-            }
+            },            
+            {
+              path: '/latest',
+              component: () => import("../views/mypage/MyLatestPage.vue")
+            },
+
           ]
       },
       {
