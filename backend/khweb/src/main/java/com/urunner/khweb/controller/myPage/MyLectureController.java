@@ -51,6 +51,7 @@ public class MyLectureController {
         Long latestVideoId = member.getLatestVideoId();
         Lecture latestLecture= service.callLatestLecture(latestVideoId);
         log.info("latest Lecture: "+ latestLecture.getTitle());
+
         return new ResponseEntity<>(latestLecture,HttpStatus.OK);
 
     }

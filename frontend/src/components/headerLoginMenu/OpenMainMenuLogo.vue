@@ -21,12 +21,14 @@
             <v-list-item
               v-for="(item, i) in items2"  :key="i">
               <router-link :to="{ path: item.path }" class="card_button">
-                <v-list-item-icon>
-                  <v-icon v-text="item.icon"></v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="item.text"></v-list-item-title>
-                </v-list-item-content>
+                <div class="button_flex">
+                  <v-list-item-icon>
+                    <v-icon v-text="item.icon"></v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="item.text"></v-list-item-title>
+                  </v-list-item-content>
+                </div>
               </router-link>
             </v-list-item>
           </v-list-item-group>
@@ -37,12 +39,12 @@
                 <v-btn depressed rounded text="text" @click="clickLogoutBtn">
                   Logout
                 </v-btn>
-                <v-btn v-if="this.$cookies.get('ROLES') !='ROLE_USER'" depressed rounded text="text" @click="clickManager" style="margin-bottom:5px;">
+                <v-btn v-if="isInstructor !='ROLE_USER'" depressed rounded text="text" @click="clickManager" style="margin-bottom:5px;">
                   Admin
                 </v-btn>
             </v-list-item-content>
             <v-list-item-action>
-            <v-tooltip bottom v-if="this.role == 'ROLE_USER,ROLE_ADMIN'">
+            <v-tooltip bottom v-if="isInstructor == 'ROLE_ADMIN,ROLE_USER'">
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                     color="warning"
@@ -92,7 +94,6 @@ export default {
       nickanme: Vue.$cookies.get("NICKNAME"),
       thumb_path: this.$store.state.profile.thumb_path,
       email: Vue.$cookies.get("USER_NAME"),
-      role: Vue.$cookies.get("ROLES")
     }
   },
   computed: {
@@ -111,7 +112,7 @@ export default {
       this.$router.push('/manager')
     },
     roleCheck() {
-      if(this.role == 'ROLE_USER,ROLE_ADMIN') {
+      if(this.isInstructor == 'ROLE_ADMIN,ROLE_USER') {
         var text = '지식공유자'
         return text
       } else {
@@ -144,9 +145,14 @@ a:hover { text-decoration:none !important }
 .card_button {
   display:flex;
   justify-content:start;
+  flex-grow: 1;
   color: #424242 !important;
 }
 .v-list-item__icon {
   margin-right: 15px !important;
+}
+.button_flex {
+  display: flex;
+  justify-content: row;
 }
 </style>

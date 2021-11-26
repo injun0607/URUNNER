@@ -3,8 +3,6 @@ package com.urunner.khweb.service.lecture;
 
 import com.urunner.khweb.controller.dto.lecture.*;
 import com.urunner.khweb.entity.lecture.Lecture;
-import com.urunner.khweb.entity.lecture.LectureList;
-import com.urunner.khweb.entity.lecture.LectureVideo;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -66,6 +64,8 @@ public interface LectureService {
 
     public Optional<LectureVideoInfo> getVideoInfo(Long lectureId);
 
+    public Optional<LectureVideoInfo> getVideoInfo(Long lectureId, String name);
+
     public DtoWrapper lectureBanner(int page);
 
     public DtoWrapper getVideoInfoDetail(Long id);
@@ -79,4 +79,8 @@ public interface LectureService {
     public DtoWrapper mainWishList(int page);
 
     public Boolean regStudentComment(ReviewDto reviewDto);
+
+    public List<GetReviewDto> reviewList(Page<LectureSearchDto> lectureSearchDtos);
+
+    public DtoWrapper getReview(Long id);
 }

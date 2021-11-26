@@ -114,7 +114,7 @@
                                         <!-- rating -->
                                         <div class="card_text03">
                                             <v-rating
-                                            v-model="mob.rating"
+                                            v-model="reviewData[index].avg"
                                             background-color="orange lighten-3" small dense
                                             color="orange" large readonly></v-rating>
                                         </div>
@@ -133,7 +133,7 @@
                                     <div class="btn-plus2">
                                         <span draggable="false">
                                             <b @click="goPage(mob.id)"> 
-                                                <div style="font-size:13px;text-align:center">{{ mob.desc }} 대부분 LEFT OUTER JOIN을 많이 사용하지만 상황에 따라서 RIGHT OUTER JOIN을 사용할 수 있으니 개념을 꼭 이해하고 있어야 한다.</div>
+                                                <div class="desc_text">{{ mob.desc }}</div>
                                             </b>
                                             <div class="align-right" >
                                                 <v-icon :color="wish[index] ? 'red' : 'white'" class="d-block pa-1" @click.prevent="toggleHeartBtn(mob, index)">
@@ -150,7 +150,7 @@
                         </div>
                         <v-container style="margin-top:20px;">
                         <div>
-                            <v-pagination class="btn_pagination" v-model="pageNum2" :length="pageCount2"></v-pagination>
+                            <v-pagination class="btn_pagination" v-model="pageNumber" :length="totalPages"></v-pagination>
                         </div>
                         </v-container>
                     </v-container>
@@ -205,7 +205,7 @@
             <v-row justify="center">
                 <v-dialog v-model="dialog" scrollable max-width="300px">
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn color="primary" fab dark v-bind="attrs" v-on="on" fixed right style="top:650px;left:410px;" class="hidden-md-and-up">
+                    <v-btn color="primary" fab dark v-bind="attrs" v-on="on" fixed right style="top:83vh;left:85vw;" class="hidden-md-and-up">
                         <v-icon dark>mdi-plus</v-icon>
                     </v-btn>
                 </template>
@@ -271,7 +271,10 @@ export default {
         refreshCheck: 1,
         cart: [],
         wish: [],
-        dialog: false    
+        dialog: false,
+        reviewData: [],
+        pageNumber: null,
+        totalPages: null
     }),
     created () {
         setTimeout(() => {
@@ -288,6 +291,10 @@ export default {
             for (var j = 0; j < this.callLecturelist.length; j++) {
                 this.$set(this.cart, j, this.callLecturelist[j].cart)
             }
+            this.reviewData = this.$store.state.reviewData
+
+            this.pageNumber = this.$store.state.pageData.number + 1
+            this.totalPages = this.$store.state.pageData.totalPages
             }, 300)
     },
     watch: {
@@ -302,23 +309,20 @@ export default {
             this.sideBarFilter()
         },
         priceValue() {
-            console.log('watchedStep:) this.priceValue : ' + this.priceValue)
             this.sideBarFilter()
+        },
+        ratingValue() {
+            this.sideBarFilter()
+        },
+        pageNumber(newVal) {
+            this.$store.state.pageNumber = newVal - 1
+            this.fetchCallLectureListWithCategory(this.$store.state.tempCate)
+            this.ratingValue = null
+            this.difValue = null
+            this.priceValue = null
         }
     },
     methods: {
-        nextPage2() {
-            this.pageNum2 += 1;
-        },
-        prevPage2() {
-            this.pageNum2 -= 1;
-        },
-        nextPageS() {
-            this.pageNumS += 1;
-        },
-        prevPageS() {
-            this.pageNumS -= 1;
-        },
         searching () {
             var lists = this.callLecturelist
 
@@ -328,8 +332,6 @@ export default {
                     this.searchingResult.push(lists[i])
                 }
             }
-            console.log('searching 결과 : ' + this.searchingResult)
-            console.log('0번 값은? : ' + this.searchingResult[0])
             this.searchinOn = true
             
             if (this.word == '') {
@@ -343,6 +345,9 @@ export default {
                 })
             this.path = data.title
             this.dialog = false
+            this.ratingValue = null
+            this.difValue = null
+            this.priceValue = null
         },
         callAll() {
             this.$emit("callAll", {})
@@ -372,68 +377,54 @@ export default {
                 })
         },
         sideBarFilter() {
-            console.log('변동감지')
+            if ( this.pageNumber !== 1) {
+                this.pageNumber = 1
+            }
             '일단 각 변수값 체크하고 굴리자 null이면 ㄴ 값이 있으면 ㄱ'
             // 초기화
-            var tempLists = this.copiedList            
+            var avgLists = this.reviewData
+            var tempLists = this.copiedList
             var searchingResult = []
-            var searchingResult2 = []
+            var searchingResult2 = []            
+            var searchingResult3 = []
 
-            if(this.difValue !== null) {
-                for(var i = 0; i < tempLists.length; i++){                    
-                    const regex = new RegExp(this.difValue, "gi");
-                    const comparison = regex.test(tempLists[i].grade)
-                    if(comparison){
-                        searchingResult.push(tempLists[i])
+            if(this.ratingValue !== null) {
+                for(var k = 0; k < tempLists.length; k++){
+                    if(avgLists[k].avg >= this.ratingValue) {
+                        searchingResult.push(tempLists[k])
                     }
                 }
-            } else if (this.difValue == null) {
-                console.log('this.difValue == null')
+            } else if (this.ratingValue == null) {
                 searchingResult = tempLists
             }
 
 
-            if(this.priceValue !== null) {
-                console.log('searchingResult.length : ' + searchingResult.length)
-                for(var j = 0; j < searchingResult.length; j++){
-                    if(searchingResult[j].price < this.priceValue) {
-                        console.log('true')
-                        console.log('searchingResult[j][2] : ' + searchingResult[j].price)
-                        console.log(' <= ')
-                        console.log('this.priceValue : ' + this.priceValue)
-                        searchingResult2.push(searchingResult[j])
+            if(this.difValue !== null) {
+                for(var i = 0; i < searchingResult.length; i++){                    
+                    const regex = new RegExp(this.difValue, "gi");
+                    const comparison = regex.test(searchingResult[i].grade)
+                    if(comparison){
+                        searchingResult2.push(searchingResult[i])
                     }
                 }
-            } else if (this.priceValue == null) {
-                console.log('this.priceValue == null')
+            } else if (this.difValue == null) {
                 searchingResult2 = searchingResult
             }
 
-            // if(this.priceValue == null && this.difValue == null) {
-            //     searchingResult2 = tempLists
-            // }
-            // if(this.priceValue !== null) {
-            //     for(var j = 0; j < tempLists.length; j++){                    
-            //         const regex = new RegExp(this.priceValue, "gi");
-            //         const comparison = regex.test(tempLists[j][1])
-            //         if(comparison){
-            //             searchingResult.push(tempLists[j])
-            //         }
-            //     }
-            // }
-            // if(this.ratingValue !== null) {
-            //     for(var k = 0; k < tempLists.length; k++){                    
-            //         const regex = new RegExp(this.ratingValue, "gi");
-            //         const comparison = regex.test(tempLists[k][7])
-            //         if(comparison){
-            //             searchingResult.push(tempLists[k])
-            //         }
-            //     }
-            // }
 
-            this.callLecturelist = searchingResult2
-            console.log('태그 결과')
-            console.log(this.callLecturelist)
+
+            if(this.priceValue !== null) {
+                for(var j = 0; j < searchingResult2.length; j++){
+                    if(searchingResult2[j].price < this.priceValue) {
+                        searchingResult3.push(searchingResult2[j])
+                    }
+                }
+            } else if (this.priceValue == null) {
+                searchingResult3 = searchingResult2
+            }
+
+            
+            this.callLecturelist = searchingResult3
             this.refreshCheck = 2
         },
         ...mapActions(['fetchCallLectureListWithCategory']),
@@ -934,6 +925,9 @@ input:focus {
     border-right: 1px solid #EEEEEE;
     background-color: white;
 }
+.v-list-group__header .v-list-item .v-list-item--link .theme--light {
+    padding-right: 0px !important;
+}
 .mx-auto2 {
     display:flex;
     justify-content: start;
@@ -1005,13 +999,13 @@ input:focus {
     align-items: flex-end;  
     /* hover시 사진 어둡게 */
     position: relative;
-    top:-328px;
+    top:-329px;
     background:rgba(0, 0, 0, 0.815);
     width:270px;
     height:200px;
     padding: 5px;
     text-align:center;
-    border-radius: 6px;
+    border-radius: 3px;
     opacity:0;
 }
 .btn-plus2 span {
@@ -1115,5 +1109,16 @@ a:hover { text-decoration:none !important }
   transform: scale(1.5);
   transition: transform 1s;
   filter: brightness(70%);
+}
+.desc_text {
+    font-size:13px;
+    text-align:center;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-height: 22px;
+    -webkit-line-clamp: 5; /* 표시하고자 하는 라인 수 */
+    -webkit-box-orient: vertical;
 }
 </style>

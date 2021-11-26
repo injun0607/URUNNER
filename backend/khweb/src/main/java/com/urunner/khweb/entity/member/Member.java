@@ -33,10 +33,9 @@ public class Member {
     private String introduce;
     private String nickname;
 
+
     @Column(name="latest_vide_id")
     private Long latestVideoId;
-
-
 
     @Column(name = "is_cert",columnDefinition = "boolean default false")
     private boolean isCert;

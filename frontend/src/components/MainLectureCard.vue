@@ -7,10 +7,10 @@
         max-height="380"
         :to="`course/${lecture.id}`"
       >
-        <v-img :src="`http://localhost:7777/lecture/image/${lecture.thumbPath}/${lecture.writer}`"></v-img>
+        <v-img :src="`http://localhost:7777/lecture/image/${lecture.thumbPath}/${lecture.writer}`" max-height="200"></v-img>
 
         <v-card-text class="pa-1">
-          <h2 class="text-h6 primary--text">
+          <h2 class="card_title text-h6 primary--text px-1">
             {{ lecture.title }}
           </h2>
           <p class="mb-0">{{ lecture.writer }}</p>
@@ -18,14 +18,15 @@
 
         <v-card-title class="pa-1 d-flex">
           <v-rating
-            :value="4"
+            :value="lecture.getReviewDto.avg"
             dense
             color="yellow"
             background-color="yellow"
-            hover
+            readonly
+            half-increments
             class="pa-0"
           ></v-rating>
-          <span class="primary--text text-subtitle-2 pb-0">(64)</span>
+          <span class="primary--text text-subtitle-2 pb-0">{{ lecture.getReviewDto.count - 1}}명</span>
         </v-card-title>
         <v-card-text class="ma-1 pa-1 text-center">
            <p class="text-h6 warning--text mb-1">{{ getCurrencyFormat(lecture.price) }} 원</p>
@@ -92,15 +93,38 @@ export default {
      axios.get(`${API_BASE_URL}/manageLecture/addToWish/${lectureId}`)
             .then(({ data }) => {
                this.wish = data
-               
             })
+            .then(() => {
+               axios.get(`${API_BASE_URL}/manageLecture/mainWishList`)
+                .then(({data}) => {
+                  console.log(data);
+                  this.$store.state.wishList = data.data
+                })
+              })
     },
     toggleCartBtn(lectureId) {
       axios.get(`${API_BASE_URL}/manageLecture/addToCart/${lectureId}`)
             .then(({ data }) => {
                this.cart = data
             })
+            .then(() => {
+               axios.get(`${API_BASE_URL}/manageLecture/mainCartList`)
+                .then(({data}) => {
+                  this.$store.state.cartList = data.data
+
+              })
+            })
     }
   },
 }
 </script>
+
+<style scoped>
+.card_title {
+  overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* 표시하고자 하는 라인 수 */
+    -webkit-box-orient: vertical;
+}
+</style>

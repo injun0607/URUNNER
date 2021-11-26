@@ -1,10 +1,15 @@
 package com.urunner.khweb.controller.lecture;
 
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.urunner.khweb.controller.dto.lecture.*;
 import com.urunner.khweb.entity.member.Member;
 import com.urunner.khweb.repository.member.MemberRepository;
+import com.urunner.khweb.filter.TokenUtil;
 import com.urunner.khweb.service.lecture.LectureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +18,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -110,15 +117,31 @@ public class LectureController {
     }
 
     @GetMapping("/image/{path}/{writer}")
-    public ResponseEntity<UrlResource> getThumnail(@PathVariable("path") String path, @PathVariable("writer") String writer) throws MalformedURLException {
+    public ResponseEntity<UrlResource> getThumnail(@PathVariable("path") String path, @PathVariable("writer") String writer){
 
-        UrlResource image = new UrlResource("classpath:" + imageLocation + "/" + writer + "/" + path);
+        if (findNull(path, writer)) return null;
 
-        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                .contentType(MediaTypeFactory.getMediaType(image).orElse(MediaType.APPLICATION_OCTET_STREAM))
-                .body(image);
+        try {
+            UrlResource image = new UrlResource("classpath:" + imageLocation + "/" + writer + "/" + path);
+            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                    .contentType(MediaTypeFactory.getMediaType(image).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                    .body(image);
+        } catch (NoSuchElementException | MalformedURLException error ) {
+            error.getStackTrace();
+            return null;
+        }
     }
 
+    private boolean findNull(String path, String writer) {
+        if (path == null || writer == null) {
+            System.out.println("paht : " + path);
+            System.out.println("writer : " + writer);
+            return true;
+        }
+        return false;
+    }
+
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/newlecture")
     public String newLecture(@RequestBody LinkedHashMap test) throws JsonProcessingException {
 
@@ -392,25 +415,26 @@ public class LectureController {
         return lectureService.getVideoInfoDetail(videoId);
     }
 
-    @GetMapping("/videos/{lectureId}")
+    @GetMapping("/videos/{lectureId}/{token}")
     public ResponseEntity<ResourceRegion> getVideo(@PathVariable Long lectureId,
-                                                   @RequestHeader HttpHeaders headers) throws IOException {
+                                                   @RequestHeader HttpHeaders headers,
+                                                   @PathVariable String token) throws IOException {
 
-        log.info("lectureId: "+ lectureId);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("현재유저 : "  +authentication.getName());
+        log.info("lectureId : "+ lectureId);
+        String tokenParsing = token.substring("Bearer ".length());
 
-        Member member = memberRepository.findByEmail(authentication.getName());
+        DecodedJWT decodedJWT = TokenUtil.validateToken(tokenParsing);
 
-        log.info("현재아이디 : "+authentication.getName());
+        String username = decodedJWT.getSubject();
 
+        log.info("현재 유저이름 : " +username);
+        Member member = memberRepository.findByEmail(username);
         member.setLatestVideoId(lectureId);
         memberRepository.save(member);
-
         log.info("member videoId:" + member.getLatestVideoId());
+        Optional<LectureVideoInfo> videoInfo = lectureService.getVideoInfo(lectureId, username);
 
-        Optional<LectureVideoInfo> videoInfo = lectureService.getVideoInfo(lectureId);
 
 
         log.info("getVideo");
@@ -438,6 +462,12 @@ public class LectureController {
             long rangeLength = Long.min(chunkSize, contentLength);
             return new ResourceRegion(video, 0, rangeLength);
         }
+    }
+
+    @GetMapping("/getReview/{lectureId}")
+    public DtoWrapper getReview(@PathVariable("lectureId") Long id) {
+
+        return lectureService.getReview(id);
     }
 
     public void mkdirFolder(File folder) {
