@@ -3,9 +3,11 @@
       <v-card width="260" tile style="opacity:0.96">
         <v-list>
           <v-list-item>
-            <v-list-item-avatar color="black" size="60">
-              <v-img :src="`http://localhost:7777/lecture/image/${thumb_path}/${email}`"></v-img>
-            </v-list-item-avatar>
+            <router-link :to="{ path: '/memberProfile' }">
+              <v-list-item-avatar color="black" size="60">
+                <v-img :src="`http://localhost:7777/lecture/image/${thumb_path}/${email}`"></v-img>
+              </v-list-item-avatar>
+            </router-link>
             <v-list-item-content>
               <router-link :to="{ path: '/memberProfile' }">
                 <v-list-item-title class="card_nickname">
@@ -39,13 +41,13 @@
                 <v-btn depressed rounded text="text" @click="clickLogoutBtn">
                   Logout
                 </v-btn>
-                <v-btn v-if="isInstructor !='ROLE_USER'" depressed rounded text="text" @click="clickManager" style="margin-bottom:5px;">
+                <v-btn v-if="isAdmin" depressed rounded text="text" @click="clickManager" style="margin-bottom:5px;">
                   Admin
                 </v-btn>
             </v-list-item-content>
             <v-list-item-action>
               
-            <v-tooltip bottom v-if="isInstructor == 'ROLE_USER,ROLE_MANAGER'">
+            <v-tooltip bottom v-if="isInstructor">
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                     color="warning"
@@ -86,6 +88,7 @@ export default {
   data() {
     return {
       items2: [
+        { text: '강의 이어듣기', icon: 'mdi-book', path: '/latest' },
         { text: '내 학습', icon: 'mdi-bookshelf', path: '/myLecture' },
         { text: '위시리스트', icon: 'mdi-star-check-outline', path: '/wishlist' },
         { text: '포인트', icon: 'mdi-alpha-p-circle-outline', path: '/my-points' },
@@ -99,7 +102,10 @@ export default {
   },
   computed: {
     isInstructor() {
-      return this.$cookies.get('ROLES')
+      return this.$cookies.get('ROLES').includes("ROLE_MANAGER")
+    },
+    isAdmin() {
+      return this.$cookies.get('ROLES').includes("ROLE_ADMIN")
     }
   },
   methods: {

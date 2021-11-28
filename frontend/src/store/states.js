@@ -13,7 +13,7 @@ export default {
           { title: '문의하기', to: '/inqforuser'},
       ]},
       { title: '학습관리', items:[
-          { title: '최근학습', to: '/latest'},
+          { title: '최근 학습', to: '/latest'},
           { title: '내 학습', to: '/myLecture'},
           { title: '강의노트', to: '/'},
           { title: '멘토링', to: '/'},
@@ -23,7 +23,6 @@ export default {
       { title: '수강신청관리', items:[
           { title: '수강바구니', to: '/cart'},
           { title: '위시리스트', to: '/wishlist'},
-          { title: '쿠폰함', to: '/coupons'},
           { title: '포인트', to: '/my-points'},
           { title: '구매내역', to: '/orders'},
       ]},
