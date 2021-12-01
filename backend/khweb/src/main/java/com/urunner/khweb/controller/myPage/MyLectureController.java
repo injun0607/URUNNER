@@ -61,6 +61,8 @@ public class MyLectureController {
 
             return new ResponseEntity<>(latestLecture,HttpStatus.OK);
 
+
+            
         }
 
     }
