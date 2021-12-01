@@ -16,15 +16,16 @@
 </template>
 
 <script>
-import MainBanner from "@/components/MainBanner.vue";
-import MainLectureList from "@/components/MainLectureList.vue";
-import MainSearchBox from "@/components/MainSearchBox.vue";
-import MainStudyList from "@/components/MainStudyList.vue";
-import MainReviewList from "@/components/common/MainReviewList.vue";
-import axios from "axios";
-import { API_BASE_URL } from "@/constants/index";
-import { mapState, mapActions } from "vuex";
-import EventBus from "@/event";
+
+import MainBanner from '@/components/MainBanner.vue';
+import MainLectureList from '@/components/MainLectureList.vue'
+import MainSearchBox from '@/components/MainSearchBox.vue'
+import MainStudyList from '@/components/MainStudyList.vue'
+import MainReviewList from '@/components/common/MainReviewList.vue'
+import axios from 'axios';
+import { API_BASE_URL } from '@/constants/index'
+import { mapState, mapActions } from 'vuex'
+import EventBus from '@/event'
 
 export default {
   components: {
@@ -43,14 +44,16 @@ export default {
       cart: null,
       currentPage: 0,
       lectureCount: 0,
-    };
+    }
   },
   computed: {
-    ...mapState(["boards"]),
+      ...mapState(['boards']),
   },
   created() {
     this.fetchAllLecture();
-    this.fetchStudyBoardList();
+    this.fetchStudyBoardList()
+  },
+  mounted () {
   },
   mounted() {},
   methods: {
