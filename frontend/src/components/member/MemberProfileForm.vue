@@ -112,13 +112,6 @@
                             </v-btn>
                             </router-link>
                         </div>
-                        <div class="button_box" style="margin-bottom: 15px">
-                            <router-link to="/leave-member">
-                            <v-btn color="transparent" class="item" style="color: #29B6F6;">
-                                회원탈퇴
-                            </v-btn>
-                            </router-link>
-                        </div>
                         
                     </fieldset>
                 </div>
